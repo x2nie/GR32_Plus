@@ -7,7 +7,7 @@ interface
 uses
   Windows, Controls;
 
-{$R Cursors.res}
+{$R res\Cursors.res}
 
 const
   // Cursors (Photoshop like). The value are the same as the resource IDs.

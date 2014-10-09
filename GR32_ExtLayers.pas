@@ -1,3 +1,107 @@
+{
+Based on the newsgroup post (March 18, 2002,  news://news.g32.org/g32org.public.graphics32)
+ <public@lischke-online.de ; <news:a755io$6t1$1@webserver9.elitedev.com>...
+----
+
+Hi all,
+
+recently I posted two images here to show a new layers concept I have worked
+out. Now that I have finished my work on it and because I want to give back
+something for what I got when using Graphics32 I decided to publish my
+source code.
+
+Note however: the code I'm presenting here is not fully bug free nor can it
+be expected to work on all configurations, although I tried to make it as
+good as possible for what my time allowed. Additionally, I cannot give
+support for it nor will I be able to continue to work on it in the
+foreseeable future.
+
+What's now in there for you?
+
+The package (which you can download from
+www.lischke-online.de/download/GR32Ex.zip contains two units and an
+additional folder with cursors, all very similar to those used in Photoshop
+and most of them enhanced with a shadow for use under Windows XP and Win 2K.
+These cursors are automatically bound to your application when you add the
+GR32_Types.pas unit to your project. It checks for the system and loads
+either plain cursors or those with the alpha channel. Since there are 125
+cursors in the package the resulting res file is 470KB. Consider this when
+adding the cursors. But since they are made for image editing applications
+this doesn't matter probably.
+
+The other unit (GR32_ExtLayers.pas) contains a reimplementation of the
+layers used currently in Graphics32. The implementation starts from
+TCustomLayer and defines the following new:
+
+- TTransformationLayer (the base class from which all others are derived)
+- TGridLayer (derived from TTransformationLayer)
+- TExtRubberBandLayer (derived from TTransformationLayer)
+- TPropertyLayer (derived from TTransformationLayer)
+- TTextLayer (derived from TPropertyLayer)
+- TExtBitmapLayer (derived from TPropertyLayer)
+
+Additionally there is a slightly enhanced TAffineTransformation derivate
+(TExtAffineTransformation).
+
+Here a short description of all the layers:
+
+TTransformationLayer
+This layer is the fundament of the other enhanced layers and provides the
+functionality to translate, rotate, sheer (skew) and scale any layer. It
+supports a pivot point, which is the center for rotations and proportional
+transformations. Because of the rotation and sheer feature this and derived
+layers are slower in handling than the current layers, but my primary goal
+was to provide as many of the features of Photoshop as I could implement.
+
+TGridLayer
+This layer provides you with a customizable grid and support for guides.
+It allows to snap coordinates to either guides, grid lines or the image
+borders (just like in Photoshop). All features are switchable. This grid
+cannot be rotated however and is always axis aligned.
+
+TExtRubberBandLayer
+This layer is a much enhanced reimplementation of the current rubberband
+and supports almost anything what Photoshop allows. This includes to
+visually rotate and scale images (negative scale values will mirror them).
+It supports grid snapping of the four corners and the center, regardless of
+the transformation state and correctly handles all the difficult cases for
+cursor and hit test managment. The shift and control keys are supported as
+well, to limit rotation to 45? multiples, to allow skewing the image and to
+make proportional scaling possible (width/height ration of the layer is
+constant). To make the support complete also the Alt key will be considered,
+with the same effect as in, you guess it, Photoshop (e.g. sizing is done to
+all four directions, with the pivot as center etc.).
+NOTE: the rubber band uses many of the cursors in the GR32_Types.pas unit!
+
+TPropertyLayer
+This layer is a generic ancestor for the following layers and only stores
+some properties, which might be used, e.g. when loading PSD files.
+
+TTextLayer
+This layer is not really implemented, but used as a placeholder. Once
+somebody decides to write a real text layer, this one can serve as the
+starting point.
+
+TExtBitmapLayer
+This is the last layer in the bundle and provides means to paint a
+TBitmap32 with all the transformations applied. Additionally, it has a
+PaintTo method, which allows to draw the content to other locations than the
+ImgView32 container.
+
+I have also included a draw mode property in the property layer, which is
+not directly implemented in the extended layer unit. Instead it can be used
+by the application to determine the draw mode (e.g. blend, subtract, add,
+multiply etc.) which should be applied to the layer's pixel.
+
+OK, that's it so far. I hope you like what I have here and also hope it gets
+much extended in the future (then perhaps also with the new G32 lib).
+
+Ciao, Mike
+--
+www.delphi-gems.com 
+www.lischke-online.de 
+www.delphi-unicode.net 
+}
 unit GR32_ExtLayers;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -5,7 +109,7 @@ unit GR32_ExtLayers;
 interface
 
 uses
-  Windows, Classes, Controls, Forms, Graphics,       
+  Windows, Classes, SysUtils, Controls, Forms, Graphics,       
   GR32_Types, GR32, GR32_Layers, GR32_Transforms;
 
 type
@@ -31,6 +135,7 @@ type
     FAngle: Single;                              // Given in degrees.
     FAlphaHit: Boolean;
     FTransformation: TAffineTransformation;
+
     FSkew: TFloatPoint;
     FPosition: TFloatPoint;
     FScaling: TFloatPoint;
@@ -47,6 +152,7 @@ type
     procedure SetScaling(const Value: TFloatPoint);
     procedure SetSkew(const Value: TFloatPoint);
   protected
+    FTransformedBound: TRect;
     procedure DoChange; virtual;
     function GetNativeSize: TSize; virtual;
     procedure Notification(ALayer: TCustomLayer); override;
@@ -160,6 +266,7 @@ type
     FOldScaling: TFloatPoint;
     FOldPivot: TFloatPoint;
     FOldSkew: TFloatPoint;
+    FOldAbsAnchor, FOldAnchor : TFloatPoint;
     FOldAngle: Single;
     FDragPos: TPoint;
 
@@ -220,6 +327,8 @@ type
     procedure SetName(const Value: WideString);
     procedure SetDrawMode(const Value: TLayerDrawMode);
   public
+    procedure UpdateTransformation; override;
+
     property DrawMode: TLayerDrawMode read FDrawMode write SetDrawMode;
     property Locked: Boolean read FLocked write FLocked;
     property Name: WideString read FName write SetName;
@@ -268,6 +377,9 @@ uses
 
 type
   TAffineTransformationAccess = class(TAffineTransformation);
+  // To access protected properties and methods.
+  TLayerCollectionCast = class(TLayerCollection);
+
 
 //----------------- TTransformationLayer ---------------------------------------------------------------------------------
 
@@ -298,7 +410,8 @@ procedure TTransformationLayer.SetAngle(Value: Single);
 begin
   Changing;
   FAngle := Value;
-  Changed; // Layer collection.
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange; // Layer only.
 end;
@@ -310,7 +423,8 @@ procedure TTransformationLayer.SetPivot(const Value: TFloatPoint);
 begin
   Changing;
   FPivotPoint := Value;
-  Changed;
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange;
 end;
@@ -337,7 +451,8 @@ procedure TTransformationLayer.SetPosition(const Value: TFloatPoint);
 begin
   Changing;
   FPosition := Value;
-  Changed;
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange;
 end;
@@ -351,7 +466,8 @@ begin
   begin
     Changing;
     FScaled := Value;
-    Changed;
+    UpdateTransformation;
+    Changed(FTransformedBound); // Layer collection.
 
     DoChange;
   end;
@@ -364,7 +480,8 @@ procedure TTransformationLayer.SetScaling(const Value: TFloatPoint);
 begin
   Changing;
   FScaling := Value;
-  Changed;
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange;
 end;
@@ -376,7 +493,8 @@ procedure TTransformationLayer.SetSkew(const Value: TFloatPoint);
 begin
   Changing;
   FSkew := Value;
-  Changed;
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange;
 end;
@@ -470,7 +588,8 @@ begin
   FPosition := FloatPoint(0, 0);
   FScaling := FloatPoint(1, 1);
   FAngle := 0;
-  Changed;
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange;
 end;
@@ -480,14 +599,23 @@ end;
 procedure TTransformationLayer.UpdateTransformation;
 var
   ShiftX, ShiftY, ScaleX, ScaleY: Single;
+  ClipRect : TRect;
 begin
   FTransformation.Clear;
+
+{  FTransformation.Translate(-FPivotPoint.X, -FPivotPoint.Y);
+  FTransformation.Scale(FScaling.X, FScaling.Y);
+  FTransformation.Skew(FSkew.X, FSkew.Y);
+  FTransFormation.Rotate(0, 0, FAngle);
+  FTransformation.Translate(FPosition.X + FPivotPoint.X, FPosition.Y + FPivotPoint.Y);}
 
   FTransformation.Translate(-FPivotPoint.X, -FPivotPoint.Y);
   FTransformation.Scale(FScaling.X, FScaling.Y);
   FTransformation.Skew(FSkew.X, FSkew.Y);
   FTransFormation.Rotate(0, 0, FAngle);
   FTransformation.Translate(FPosition.X + FPivotPoint.X, FPosition.Y + FPivotPoint.Y);
+
+
 
   // Scale to viewport if activated.
   if FScaled and Assigned(LayerCollection) then
@@ -497,6 +625,10 @@ begin
     LayerCollection.GetViewportShift(ShiftX, ShiftY);
     FTransformation.Translate(ShiftX, ShiftY);
   end;
+
+  FTransformedBound:= MakeRect( FTransformation.GetTransformedBounds({FloatRect(Bitmap.BoundsRect)}) );
+  //ClipRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
+  //IntersectRect(FTransformedBound, ClipRect, FTransformedBound);
 
 end;
 
@@ -601,10 +733,6 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
-
-type
-  // To access protected properties and methods.
-  TLayerCollectionCast = class(TLayerCollection);
 
 function TGridLayer.GetNativeSize: TSize;
 
@@ -1012,7 +1140,7 @@ begin
   if FChildLayer <> nil then
     LayerOptions := LayerOptions or LOB_NO_UPDATE
   else
-    LayerOptions := LayerOptions and not LOB_NO_UPDATE;
+    LayerOptions := LayerOptions and not LOB_NO_UPDATE;//x2nie
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1062,8 +1190,9 @@ begin
   begin
     Changing;
     FOptions := Value;
-    Changed;
-    
+    //UpdateTransformation;
+    Changed(FTransformedBound); // Layer collection.
+
     DoChange;
   end;
 end;
@@ -1090,7 +1219,8 @@ procedure TExtRubberBandLayer.SetSize(const Value: TSize);
 begin
   Changing;
   FSize := Value;
-  Changed;
+  UpdateTransformation;
+  Changed(FTransformedBound); // Layer collection.
 
   DoChange;
 end;
@@ -1143,7 +1273,8 @@ begin
   Polygon[1][2] := Contour[1];
   Polygon[1][3] := Contour[0];
   Polygon[1][4] := Contour[3];
-  PolyPolygonTS(Buffer, Polygon, FOuterColor, pfWinding);
+  //PolyPolygonTS(Buffer, Polygon, FOuterColor, pfWinding);
+  PolyPolygonXS(Buffer, Polygon, FOuterColor, pfWinding);
 end;
            
 //----------------------------------------------------------------------------------------------------------------------
@@ -1420,6 +1551,11 @@ begin
     FOldPivot := FPivotPoint;
     FOldSkew := FSkew;
     FOldAngle := FAngle;
+    FOldAnchor := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
+    //FOldAbsAnchor := FTransformation.ReverseTransform(FOldAnchor);
+    FOldAbsAnchor.X := FOldAnchor.X - FOldPosition.X;
+    FOldAbsAnchor.Y := FOldAnchor.Y - FOldPosition.Y; 
+
     FDragPos := Point(X, Y);
   end;
   inherited;
@@ -1474,6 +1610,7 @@ var
   dX, dY,
   PivotX, PivotY,
   TransX, TransY,
+  ShiftX, ShiftY,
   ScaleX, ScaleY: Single;
 
   Angle,
@@ -1484,15 +1621,27 @@ var
   T: Extended;
   DirX,
   DirY: Integer;             // Used to calculate the correct direction of scale/translation.
-  Snapped: Boolean;          
+  Snapped: Boolean;
 
   LastPosition: TFloatPoint;
   LastRotation: Single;
+  AbsCurrentAnchor, AnchorCurrent, AnchorNew, AnchorOld, NewPivot,
   LastScaling: TFloatPoint;
-  
+  P : TPoint;
+  FR : TFloatRect;
+
 begin
   if not TAffineTransformationAccess(FTransformation).TransformValid then
     TAffineTransformationAccess(FTransformation).PrepareTransform;
+  P := FTransformation.ReverseTransform(Point(x,y));
+  TCustomImgView32(LayerCollection.Owner).Hint := format('mouse pos: %d,%d   Transformed: %d,%d',[x,y, p.x, p.y]);
+  begin
+
+//    Canvas.Pen.Mode := pmNotXor;
+//    Canvas.MoveTo(X,0); Canvas.LineTo(X,Height);
+//    Canvas.MoveTo(0,Y); Canvas.LineTo(Width,Y);
+  end;
+
   if not FIsDragging then
   begin
     FDragState := GetHitCode(X, Y, Shift);
@@ -1519,7 +1668,9 @@ begin
     LastRotation := FAngle;
     LastScaling := FScaling;
 
-    Changing;
+    //Changing;
+
+    //WE ARE FORCING TO TALK IN LAYER-SPACE-COORDINATE
 
       dX := X - FDragPos.X;
       dY := Y - FDragPos.Y;
@@ -1542,7 +1693,8 @@ begin
       TransY := -Sine * dX + Cosine * dY;
 
       // Scale values for local coordinates determined by the ratio between top/left border to pivot position
-      // (which is the center when the image gets scaled). Note: the pivot point is local to the image, so the
+      // (which is the center when the image gets scaled).
+      // Note: the pivot point is local to the image, so the
       // image's position doesn't matter.
       ScaleRatioX := FOldPivot.X / FSize.cx;
       ScaleRatioY := FOldPivot.Y / FSize.cy;
@@ -1551,7 +1703,7 @@ begin
       DirY := 1;
       if ssAlt in Shift then
         FPosition := FOldPosition;
-        
+
     case FDragState of
       rdsMoveLayer:
         begin
@@ -1560,8 +1712,130 @@ begin
         end;
       rdsMovePivot: // Not fully implemented. Real implementation requires special rotation management.
         begin
-          FPivotPoint.X := FOldPivot.X + dX;
-          FPivotPoint.Y := FOldPivot.Y + dY;
+          // 1. Get target point in layer-space
+          // FP := FloatPoint(FOldPivot.X + dX, FOldPivot.Y + dY);
+          // NewPivot := FTransformation.ReverseTransform(FP);
+          NewPivot := FTransformation.ReverseTransform(FloatPoint(x,y));
+          FPivotPoint := NewPivot;
+
+
+
+
+
+
+          // 2. GET THE POSITION CORRECTION
+
+          FTransformation.Clear;
+          FTransformation.Translate(-NewPivot.X, -NewPivot.Y);
+          FTransformation.Scale(FScaling.X, FScaling.Y);
+          FTransformation.Skew(FSkew.X, FSkew.Y);
+          FTransFormation.Rotate(0, 0, FAngle);
+          FTransformation.Translate(FOldPosition.X + NewPivot.X, FOldPosition.Y + NewPivot.Y);
+
+          // Scale to viewport if activated.
+          if FScaled and Assigned(LayerCollection) then
+          begin
+            LayerCollection.GetViewportScale(ScaleX, ScaleY);
+            FTransformation.Scale(ScaleX, ScaleY);
+            LayerCollection.GetViewportShift(ShiftX, ShiftY);
+            FTransformation.Translate(ShiftX, ShiftY);
+          end;
+
+          AnchorNew := FTransformation.GetTransformedBounds.TopLeft; //Target
+
+
+          FPosition.X   := FOldPosition.X + (FOldAnchor.X - AnchorNew.X);
+          FPosition.Y   := FOldPosition.Y + (FOldAnchor.Y - AnchorNew.Y);
+
+          (*
+          FTransformation.Clear;
+          FTransFormation.Rotate(FOldPivot.X, FOldPivot.X, FOldAngle);
+          AnchorOld := FTransformation.GetTransformedBounds.TopLeft; //Target
+
+
+          FTransformation.Clear;
+          FTransFormation.Rotate(NewPivot.X, NewPivot.X, FOldAngle);
+          AnchorNew := FTransformation.GetTransformedBounds.TopLeft; //Target
+
+
+          FPosition.X   := FOldPosition.X + (AnchorOld.X - AnchorNew.X);
+          FPosition.Y   := FOldPosition.Y + (AnchorOld.Y - AnchorNew.Y);
+
+
+          
+          //FPivotPoint.X := FOldPivot.X + dX;
+          //FPivotPoint.Y := FOldPivot.Y + dY;
+          //AnchorCurrent := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
+          //AbsCurrentAnchor := FTransformation.ReverseTransform(AnchorCurrent);
+
+
+          // the idea: Get new top left if newpivot applied:
+          // 2.a : remove position to zero
+          FTransformation.Translate( -(FPivotPoint.X{+ FPosition.X}), -(FPivotPoint.Y{+ FPosition.Y}));
+          //FTransformation.Translate( -({FOldPivot.X+} FoldPosition.X + dx), -({FOldPivot.Y+} FOldPosition.Y + dy));
+
+          // 2.b : get the old top left
+          //FTransformation.Translate( (FOldPivot.X+ FOldPosition.X), (FOldPivot.Y+ FOldPosition.Y));
+          FTransformation.Translate( (NewPivot.X{+ FOldPosition.X}), (NewPivot.Y{+ FOldPosition.Y}));
+          //AnchorOld     := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
+          TAffineTransformationAccess(FTransformation).PrepareTransform;
+
+          //FTransformation
+          AnchorCurrent := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
+          //AbsCurrentAnchor := FTransformation.ReverseTransform(AnchorCurrent);
+          AbsCurrentAnchor.X := AnchorCurrent.X - FPosition.X;
+          AbsCurrentAnchor.Y := AnchorCurrent.Y - FPosition.Y;
+
+          //FTransformation.Translate( NewPivot.X, NewPivot.Y);
+          //AnchorNew     := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
+
+          //FPosition.X   := AnchorCurrent.X - AnchorNew.X {- NewPivot.X};
+          //FPosition.Y   := AnchorCurrent.Y - AnchorNew.Y {- NewPivot.Y};
+
+          FPosition.X   := FOldPosition.X + AnchorCurrent.X - FOldAnchor.X {- NewPivot.X};
+          FPosition.Y   := FOldPosition.Y + AnchorCurrent.Y - FOldAnchor.Y {- NewPivot.Y};
+
+          {
+          FPosition.X   := FOldPosition.X + (NewPivot.X - FOldPivot.X);
+          FPosition.Y   := FOldPosition.Y + (NewPivot.Y - FOldPivot.Y);
+
+          FPosition.X   := (FOldPosition.X - FOldPivot.X)+ NewPivot.X ;
+          FPosition.Y   := (FOldPosition.Y - FOldPivot.Y)+ NewPivot.Y;
+          }
+
+          FPosition.X   := FOldPosition.X + AnchorCurrent.X - FOldAnchor.X {- NewPivot.X};
+          FPosition.Y   := FOldPosition.Y + AnchorCurrent.Y - FOldAnchor.Y {- NewPivot.Y};
+
+
+          FPosition.X   := FOldPosition.X - (AbsCurrentAnchor.X - FOldAbsAnchor.X );
+          FPosition.Y   := FOldPosition.Y - (AbsCurrentAnchor.Y - FOldAbsAnchor.Y) ;
+
+
+          //==============================
+          FTransformation.Clear;
+          //FTransformation.Translate( (NewPivot.X{+ FOldPosition.X}), (NewPivot.Y{+ FOldPosition.Y}));
+          FTransFormation.Rotate(NewPivot.X, NewPivot.X, FAngle);
+          AbsCurrentAnchor := FTransformation.GetTransformedBounds.TopLeft; //Target
+
+          FPosition.X   := FOldPosition.X + AbsCurrentAnchor.X;
+          FPosition.Y   := FOldPosition.Y + AbsCurrentAnchor.Y;
+
+          //FPosition.X   := FOldPosition.X - (AbsCurrentAnchor.X - FOldAbsAnchor.X );
+          //FPosition.Y   := FOldPosition.Y - (AbsCurrentAnchor.Y - FOldAbsAnchor.Y) ;
+
+           
+          //FR := FTransformation.GetTransformedBounds(FloatRect(FP,FP));
+          //FPivotPoint :=FR.TopLeft ;
+          P := Point(AbsCurrentAnchor);
+          with TCustomImgView32(LayerCollection.Owner)do
+          begin
+
+            //Canvas.Pen.Mode := pmNotXor;
+            Canvas.MoveTo(P.X,0); Canvas.LineTo(P.X,Height);
+            Canvas.MoveTo(0,P.Y); Canvas.LineTo(Width,P.Y);
+          end;
+
+          *)
         end;
       rdsResizeN:
         begin
@@ -1679,7 +1953,7 @@ begin
         FScaling.X := FOldScaling.X + DirX * TransX / FSize.cx;
         FScaling.Y := FOldScaling.Y + DirY * TransY / FSize.cy;
       end
-      else
+      else  //alt in Shift, meaning resize in center (pivot)
       begin
         if ScaleRatioX < 1 then
           FScaling.X := FOldScaling.X + DirX * TransX / FSize.cx / (1 - ScaleRatioX);
@@ -1703,16 +1977,22 @@ begin
     end;
 
     // Invalidate image data only for real changes.
-    if (Abs(LastPosition.X - FPosition.X + LastPosition.Y - FPosition.Y) > Epsilon) or 
+    if (Abs(LastPosition.X - FPosition.X + LastPosition.Y - FPosition.Y) > Epsilon) or
       (Abs(LastRotation - FAngle) > Epsilon) or
       (Abs(LastScaling.X - FScaling.X + LastScaling.Y - FScaling.Y) > Epsilon) then
     begin
-      Changing;
-
       UpdateChildLayer;
-      Changed;
 
-      DoChange;
+      Changing;
+      UpdateTransformation;
+      Changed(FTransformedBound); // Layer collection.
+
+//      UpdateChildLayer;
+//x2nie      Changed;
+
+      //UpdateTransformation;
+      //Changed(FTransformedBound); // Layer collection.
+      //Changed;
     end;
   end;
 
@@ -1829,6 +2109,36 @@ var
     XNew, YNew, ShiftX, ShiftY: Single;
 
   begin
+
+    with FTransformation do
+    begin
+      XNew := Matrix[0, 0] * X + Matrix[1, 0] * Y + Matrix[2, 0];
+      YNew := Matrix[0, 1] * X + Matrix[1, 1] * Y + Matrix[2, 1];
+    end;
+
+{    if FScaled and Assigned(LayerCollection) then
+    begin
+      LayerCollection.GetViewportScale(XNew, YNew);
+      LayerCollection.GetViewportShift(ShiftX, ShiftY);
+      XNew := XNew * X + ShiftX;
+      YNew := YNew * Y + ShiftY;
+    end
+    else
+    begin
+      XNew := X;
+      YNew := Y;
+    end;}
+
+    DrawIconEx(Buffer.Handle, Round(XNew - 8), Round(YNew - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+  end;
+
+  procedure DrawPositionMark(X, Y: Single);
+
+  // Special version for the pivot image. Also this image is neither rotated nor scaled.
+
+  var
+    XNew, YNew, ShiftX, ShiftY: Single;
+  begin
     if FScaled and Assigned(LayerCollection) then
     begin
       LayerCollection.GetViewportScale(XNew, YNew);
@@ -1842,9 +2152,39 @@ var
       YNew := Y;
     end;
 
-    DrawIconEx(Buffer.Handle, Round(XNew - 8), Round(YNew - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
+      Round(YNew + FHandleSize), clLime32);
   end;
 
+  procedure DrawTransformedPosition(X, Y: Single);
+
+  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
+
+  var
+    XNew, YNew: Single;
+
+  begin
+    with FTransformation do
+    begin
+      XNew := Matrix[0, 0] * X + Matrix[1, 0] * Y + Matrix[2, 0];
+      YNew := Matrix[0, 1] * X + Matrix[1, 1] * Y + Matrix[2, 1];
+    end;
+
+    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
+      Round(YNew + FHandleSize), clRed32);
+  end;
+
+  procedure DrawBlinddPosition(X, Y: Single; color:TColor32);
+
+  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
+
+  var
+    XNew, YNew: Single;
+
+  begin
+    Buffer.FillRectS(Round(X - FHandleSize), Round(Y - FHandleSize), Round(X + FHandleSize),
+      Round(Y + FHandleSize), color);
+  end;
   //--------------- end local functions ---------------------------------------
 
 var
@@ -1879,6 +2219,7 @@ begin
     Cx := FSize.cx / 2;
     Cy := FSize.cy / 2;
 
+
     DrawHandle(Cx, 0);
     DrawHandle(FSize.cx, Cy);
     DrawHandle(Cx, FSize.cy);
@@ -1886,6 +2227,12 @@ begin
   end;
   if rboAllowPivotMove in FOptions then
     DrawPivot(FPivotPoint.X, FPivotPoint.Y);
+
+  //debug
+  DrawBlinddPosition(Self.Position.X, self.Position.y, clYellow32);
+  DrawPositionMark(Self.Position.X, self.Position.y);
+  //DrawTransformedPosition(Self.Position.X, self.Position.y);
+  DrawBlinddPosition(FPivotPoint.X, FPivotPoint.Y, clAqua32);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -1998,14 +2345,22 @@ begin
     if Different(FChildLayer.Skew, Skew) then FChildLayer.Skew := Skew;
     if Different(FChildLayer.Position, Position) then FChildLayer.Position := Position;
     if Different(FChildLayer.Scaling, Scaling) then FChildLayer.Scaling := Scaling;
-    if Different(FChildLayer.PivotPoint, PivotPoint) then FChildLayer.PivotPoint := PivotPoint;
+    if Different(FChildLayer.PivotPoint, PivotPoint) then
+    begin
+      FChildLayer.PivotPoint := PivotPoint;
+      SomethingChanged := True;
+    end;
 
     FChildLayer.EndUpdate;
 
     if SomethingChanged then
     begin
-      FChildLayer.Changed; // trigger for LayerCollection
+
+      FChildLayer.UpdateTransformation;
+      FChildLayer.Changed(FChildLayer.FTransformedBound); // Layer collection.
+      //FChildLayer.Changed; // trigger for LayerCollection
       FChildLayer.DoChange; // trigger for Layer
+      
     end;
   end;
 end;
@@ -2174,14 +2529,79 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TExtBitmapLayer.Paint(Buffer: TBitmap32);
+const FHandleSize = 20;
+  procedure DrawPositionMark(X, Y: Single);
 
-begin 
+  // Special version for the pivot image. Also this image is neither rotated nor scaled.
+
+  var
+    XNew, YNew, ShiftX, ShiftY: Single;
+  begin
+    if FScaled and Assigned(LayerCollection) then
+    begin
+      LayerCollection.GetViewportScale(XNew, YNew);
+      LayerCollection.GetViewportShift(ShiftX, ShiftY);
+      XNew := XNew * X + ShiftX;
+      YNew := YNew * Y + ShiftY;
+    end
+    else
+    begin
+      XNew := X;
+      YNew := Y;
+    end;
+
+    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
+      Round(YNew + FHandleSize), clTrRed32);
+  end;
+
+  procedure DrawTransformedPosition(X, Y: Single);
+
+  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
+
+  var
+    XNew, YNew: Single;
+
+  begin
+    with FTransformation do
+    begin
+      XNew := Matrix[0, 0] * X + Matrix[1, 0] * Y + Matrix[2, 0];
+      YNew := Matrix[0, 1] * X + Matrix[1, 1] * Y + Matrix[2, 1];
+    end;
+
+    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
+      Round(YNew + FHandleSize), clTrRed32);
+  end;
+
+  procedure DrawBlinddPosition(X, Y: Single);
+
+  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
+
+  var
+    XNew, YNew: Single;
+
+  begin
+    Buffer.FillRectS(Round(X - FHandleSize), Round(Y - FHandleSize), Round(X + FHandleSize),
+      Round(Y + FHandleSize), clTrWhite32);
+  end;
+  //--------------- end local functions ---------------------------------------
+
+var ImageRect : TRect;
+  ClipRect: TRect;
+begin
   UpdateTransformation;
-
+  ImageRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
+  ClipRect := Buffer.ClipRect;
+  IntersectRect(ClipRect, ClipRect, ImageRect);
+  IntersectRect(ClipRect, ClipRect, FTransformedBound);
   // TODO: cropping
-  if not TAffineTransformationAccess(FTransformation).TransformValid then
-    TAffineTransformationAccess(FTransformation).PrepareTransform;
-  Transform(Buffer, FBitmap, FTransformation);
+ // if not TAffineTransformationAccess(FTransformation).TransformValid then
+   // TAffineTransformationAccess(FTransformation).PrepareTransform;
+  Transform(Buffer, FBitmap, FTransformation,ClipRect);
+  
+  DrawBlinddPosition(Self.Position.X, self.Position.y);
+  DrawPositionMark(Self.Position.X, self.Position.y);
+//  DrawTransformedPosition(Self.Position.X, self.Position.y);
+
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2208,5 +2628,14 @@ begin
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
+
+procedure TPropertyLayer.UpdateTransformation;
+var ClipRect : TRect;
+begin
+  inherited;
+  ClipRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
+  IntersectRect(FTransformedBound, ClipRect, FTransformedBound);
+
+end;
 
 end.
