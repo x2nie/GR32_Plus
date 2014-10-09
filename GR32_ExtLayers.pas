@@ -327,8 +327,6 @@ type
     procedure SetName(const Value: WideString);
     procedure SetDrawMode(const Value: TLayerDrawMode);
   public
-    procedure UpdateTransformation; override;
-
     property DrawMode: TLayerDrawMode read FDrawMode write SetDrawMode;
     property Locked: Boolean read FLocked write FLocked;
     property Name: WideString read FName write SetName;
@@ -378,7 +376,9 @@ uses
 type
   TAffineTransformationAccess = class(TAffineTransformation);
   // To access protected properties and methods.
-  TLayerCollectionCast = class(TLayerCollection);
+  TLayerCollectionAccess = class(TLayerCollection);
+  TImage32Access = class(TCustomImage32);
+
 
 
 //----------------- TTransformationLayer ---------------------------------------------------------------------------------
@@ -737,10 +737,10 @@ end;
 function TGridLayer.GetNativeSize: TSize;
 
 var
-  Layers: TLayerCollectionCast;
+  Layers: TLayerCollectionAccess;
 
 begin
-  Layers := TLayerCollectionCast(LayerCollection);
+  Layers := TLayerCollectionAccess(LayerCollection);
   if Layers.GetOwner is TCustomImage32 then
     with TCustomImage32(Layers.GetOwner) do
     begin
@@ -1151,7 +1151,7 @@ begin
   if FHandleFill <> Value then
   begin
     FHandleFill := Value;
-    TLayerCollectionCast(LayerCollection).GDIUpdate;
+    TLayerCollectionAccess(LayerCollection).GDIUpdate;
   end;
 end;
 
@@ -1163,7 +1163,7 @@ begin
   if FHandleFrame <> Value then
   begin
     FHandleFrame := Value;
-    TLayerCollectionCast(LayerCollection).GDIUpdate;
+    TLayerCollectionAccess(LayerCollection).GDIUpdate;
   end;
 end;
 
@@ -1177,7 +1177,7 @@ begin
   if FHandleSize <> Value then
   begin
     FHandleSize := Value;
-    TLayerCollectionCast(LayerCollection).GDIUpdate;
+    TLayerCollectionAccess(LayerCollection).GDIUpdate;
   end;
 end;
 
@@ -2474,17 +2474,34 @@ end;
 
 procedure TExtBitmapLayer.Paint(Buffer: TBitmap32);
 
-var ImageRect : TRect;
+var ImageRect, DstRect : TRect;
   ClipRect: TRect;
 begin
   UpdateTransformation;
-  ImageRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
+  {ImageRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
   ClipRect := Buffer.ClipRect;
   IntersectRect(ClipRect, ClipRect, ImageRect);
   IntersectRect(ClipRect, ClipRect, FTransformedBound);
   // TODO: cropping
  // if not TAffineTransformationAccess(FTransformation).TransformValid then
    // TAffineTransformationAccess(FTransformation).PrepareTransform;
+  }
+
+
+  //DstRect := MakeRect(FInViewPortTransformation.GetTransformedBounds);
+  //DstRect := MakeRect(EdgesToFloatRect(LTransformer.Edges));
+  ClipRect := Buffer.ClipRect;
+  IntersectRect(ClipRect, ClipRect, FTransformedBound);
+  if IsRectEmpty(ClipRect) then Exit;
+  
+  if Cropped and (LayerCollection.Owner is TCustomImage32) and
+    not (TImage32Access(LayerCollection.Owner).PaintToMode) then
+  begin
+    ImageRect := TCustomImage32(LayerCollection.Owner).GetBitmapRect;
+    IntersectRect(ClipRect, ClipRect, ImageRect);
+    if IsRectEmpty(ClipRect) then Exit;
+  end;
+
   Transform(Buffer, FBitmap, FTransformation,ClipRect);
   
 
@@ -2516,13 +2533,5 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-procedure TPropertyLayer.UpdateTransformation;
-var ClipRect : TRect;
-begin
-  inherited;
-  ClipRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
-  IntersectRect(FTransformedBound, ClipRect, FTransformedBound);
-
-end;
 
 end.
