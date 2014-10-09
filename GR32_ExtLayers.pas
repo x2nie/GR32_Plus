@@ -162,6 +162,7 @@ type
 
     procedure GetLayerTransformation(var Transformation: TAffineTransformation);
     function GetTransformedTargetRect: TFloatRect;
+    function GetTransformedBound: TRect;
     procedure ResetTransformation; virtual;
     procedure UpdateTransformation; virtual;
 
@@ -381,6 +382,25 @@ type
   TImage32Access = class(TCustomImage32);
 
 
+var
+  UPivotBitmap : TBitmap32 = nil;
+
+function GetPivotBitmap : TBitmap32;
+begin
+  if not Assigned(UPivotBitmap) then
+  begin
+    UPivotBitmap := TBitmap32.Create;
+    UPivotBitmap.SetSize(16,16);
+    UPivotBitmap.Clear(0);
+    UPivotBitmap.DrawMode := dmBlend;
+
+    DrawIconEx(UPivotBitmap.Handle, 0,0, Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+  end;
+
+  Result := UPivotBitmap;
+end;
+
+
 
 //----------------- TTransformationLayer ---------------------------------------------------------------------------------
 
@@ -412,7 +432,7 @@ begin
   Changing;
   FAngle := Value;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange; // Layer only.
 end;
@@ -425,7 +445,7 @@ begin
   Changing;
   FPivotPoint := Value;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange;
 end;
@@ -453,7 +473,7 @@ begin
   Changing;
   FPosition := Value;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange;
 end;
@@ -468,7 +488,7 @@ begin
     Changing;
     FScaled := Value;
     UpdateTransformation;
-    Changed(FTransformedBound); // Layer collection.
+    Changed; // Layer collection.
 
     DoChange;
   end;
@@ -482,7 +502,7 @@ begin
   Changing;
   FScaling := Value;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange;
 end;
@@ -495,7 +515,7 @@ begin
   Changing;
   FSkew := Value;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange;
 end;
@@ -545,6 +565,8 @@ begin
   else
     Transformation.Clear;
 
+  Transformation.SrcRect := FTransformation.SrcRect;
+
   Transformation.Translate(-FPivotPoint.X, -FPivotPoint.Y);
   Transformation.Scale(FScaling.X, FScaling.Y);
   Transformation.Skew(FSkew.X, FSkew.Y);
@@ -590,7 +612,7 @@ begin
   FScaling := FloatPoint(1, 1);
   FAngle := 0;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange;
 end;
@@ -1192,7 +1214,7 @@ begin
     Changing;
     FOptions := Value;
     //UpdateTransformation;
-    Changed(FTransformedBound); // Layer collection.
+    Changed; // Layer collection.
 
     DoChange;
   end;
@@ -1221,7 +1243,7 @@ begin
   Changing;
   FSize := Value;
   UpdateTransformation;
-  Changed(FTransformedBound); // Layer collection.
+  Changed; // Layer collection.
 
   DoChange;
 end;
@@ -1988,14 +2010,14 @@ begin
 
       Changing;
       UpdateTransformation;
-      //Changed(FTransformedBound); // Layer collection.
+      //Changed; // Layer collection.
 
 //      UpdateChildLayer;
 //x2nie
       Changed;
 
       //UpdateTransformation;
-      //Changed(FTransformedBound); // Layer collection.
+      //Changed; // Layer collection.
       //Changed;
     end;
   end;
@@ -2133,7 +2155,8 @@ var
       YNew := Y;
     end;}
 
-    DrawIconEx(Buffer.Handle, Round(XNew - 8), Round(YNew - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+    //DrawIconEx(Buffer.Handle, Round(XNew - 8), Round(YNew - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+    Buffer.Draw(Round(XNew - 8), Round(YNew - 8), GetPivotBitmap() );
   end;
 
   //--------------- end local functions ---------------------------------------
@@ -2542,4 +2565,14 @@ begin
   inherited SetLayerOptions(Value);
 end;
 
+function TTransformationLayer.GetTransformedBound: TRect;
+begin
+  Result := FTransformedBound;
+end;
+
+initialization
+
+finalization
+  if Assigned(UPivotBitmap) then
+    UPivotBitmap.Free;
 end.

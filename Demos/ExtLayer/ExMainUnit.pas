@@ -324,21 +324,48 @@ end;
 
 procedure TMainForm.BtnLayerRescaleClick(Sender: TObject);
 var
-  T: TBitmap32;
+  Temp: TBitmap32;
+  T : TAffineTransformation;
+  R : TRect;
 begin
   // resize the layer's bitmap to the size of the layer
   if Selection is TExtBitmapLayer then
     with TExtBitmapLayer(Selection) do
     begin
-      T := TBitmap32.Create;
-      T.Assign(Bitmap);
-      //with MakeRect(Location) do
-        //Bitmap.SetSize(Right - Left, Bottom - Top);
-      T.Resampler := TNearestResampler.Create(T);
-      T.DrawMode := dmOpaque;
-      T.DrawTo(Bitmap, Classes.Rect(0, 0, Bitmap.Width, Bitmap.Height));
-      T.Free;
-      BtnLayerResetScaleClick(Self);
+      BeginUpdate;
+      try
+        R := GetTransformedBound;
+
+        T := nil;
+        GetLayerTransformation(T);
+        //T.Translate(-Position.X, -Position.Y);
+        T.Translate(-R.Left, -R.Top);
+
+        Temp := TBitmap32.Create;
+        //Temp.Assign(Bitmap);
+        with R do
+          Temp.SetSize(Right - Left, Bottom - Top);
+        Temp.Clear(0);
+        Temp.Resampler := TNearestResampler.Create(Temp);
+        Temp.DrawMode := Bitmap.DrawMode;
+        //Temp.DrawTo(Bitmap, Classes.Rect(0, 0, Bitmap.Width, Bitmap.Height));
+        Transform( Temp, Bitmap, T);
+      
+        Bitmap.Assign(Temp);
+        Temp.Free;
+        //BtnLayerResetScaleClick(Self);
+
+
+        Angle := 0;
+        Skew := FloatPoint(0,0);
+        Scaling := FloatPoint(1,1);
+      finally
+        EndUpdate;
+      end;
+            
+      if Assigned(RBLayer) then
+        RBLayer.ChildLayer := Selection; //reapply the selected_layer transformation
+
     end;
 
   ImgView.GetBitmapRect
@@ -349,16 +376,26 @@ var
   L: TFloatRect;
 begin
   // resize the layer to the size of its bitmap
-  if Selection is TExtBitmapLayer then
-    with TExtBitmapLayer(Selection).Bitmap do
+  if Selection is TTransformationLayer then
+  begin
+    with TTransformationLayer(Selection) do
     begin
+      BeginUpdate;
+      Angle := 0;
+      Skew := FloatPoint(0,0);
+      Scaling := FloatPoint(1,1);
+
       {L := Location;
       L.Right := L.Left + Width;
       L.Bottom := L.Top + Height;
       Location := L;}
 
+      EndUpdate;
       Changed;
     end;
+    if Assigned(RBLayer) then
+      RBLayer.ChildLayer := Selection; //reapply the selected_layer transformation
+  end;
 end;
 
 procedure TMainForm.PropertyChange(Sender: TObject);

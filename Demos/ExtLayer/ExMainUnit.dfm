@@ -185,6 +185,7 @@ object MainForm: TMainForm
         Width = 105
         Height = 17
         Caption = 'Rescale'
+        Enabled = False
         TabOrder = 3
         OnClick = BtnLayerRescaleClick
       end
