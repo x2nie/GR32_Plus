@@ -1,0 +1,201 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+250                     CURSOR  DISCARDABLE     "cur250.cur"
+251                     CURSOR  DISCARDABLE     "cur251.cur"
+252                     CURSOR  DISCARDABLE     "cur252.cur"
+253                     CURSOR  DISCARDABLE     "cur253.cur"
+254                     CURSOR  DISCARDABLE     "cur254.cur"
+255                     CURSOR  DISCARDABLE     "cur255.cur"
+256                     CURSOR  DISCARDABLE     "cur256.cur"
+258                     CURSOR  DISCARDABLE     "cur258.cur"
+259                     CURSOR  DISCARDABLE     "cur259.cur"
+260                     CURSOR  DISCARDABLE     "cur260.cur"
+261                     CURSOR  DISCARDABLE     "cur261.cur"
+262                     CURSOR  DISCARDABLE     "cur262.cur"
+263                     CURSOR  DISCARDABLE     "cur263.cur"
+264                     CURSOR  DISCARDABLE     "cur264.cur"
+265                     CURSOR  DISCARDABLE     "cur265.cur"
+266                     CURSOR  DISCARDABLE     "cur266.cur"
+268                     CURSOR  DISCARDABLE     "cur268.cur"
+269                     CURSOR  DISCARDABLE     "cur269.cur"
+270                     CURSOR  DISCARDABLE     "cur270.cur"
+271                     CURSOR  DISCARDABLE     "cur271.cur"
+272                     CURSOR  DISCARDABLE     "cur272.cur"
+273                     CURSOR  DISCARDABLE     "cur273.cur"
+274                     CURSOR  DISCARDABLE     "cur274.cur"
+275                     CURSOR  DISCARDABLE     "cur275.cur"
+276                     CURSOR  DISCARDABLE     "cur276.cur"
+277                     CURSOR  DISCARDABLE     "cur277.cur"
+278                     CURSOR  DISCARDABLE     "cur278.cur"
+279                     CURSOR  DISCARDABLE     "cur279.cur"
+280                     CURSOR  DISCARDABLE     "cur280.cur"
+281                     CURSOR  DISCARDABLE     "cur281.cur"
+282                     CURSOR  DISCARDABLE     "cur282.cur"
+283                     CURSOR  DISCARDABLE     "cur283.cur"
+284                     CURSOR  DISCARDABLE     "cur284.cur"
+285                     CURSOR  DISCARDABLE     "cur285.cur"
+286                     CURSOR  DISCARDABLE     "cur286.cur"
+287                     CURSOR  DISCARDABLE     "cur287.cur"
+288                     CURSOR  DISCARDABLE     "cur288.cur"
+290                     CURSOR  DISCARDABLE     "cur290.cur"
+291                     CURSOR  DISCARDABLE     "cur291.cur"
+292                     CURSOR  DISCARDABLE     "cur292.cur"
+293                     CURSOR  DISCARDABLE     "cur293.cur"
+294                     CURSOR  DISCARDABLE     "cur294.cur"
+295                     CURSOR  DISCARDABLE     "cur295.cur"
+296                     CURSOR  DISCARDABLE     "cur296.cur"
+297                     CURSOR  DISCARDABLE     "cur297.cur"
+298                     CURSOR  DISCARDABLE     "cur298.cur"
+299                     CURSOR  DISCARDABLE     "cur299.cur"
+301                     CURSOR  DISCARDABLE     "cur301.cur"
+302                     CURSOR  DISCARDABLE     "cur302.cur"
+303                     CURSOR  DISCARDABLE     "cur303.cur"
+304                     CURSOR  DISCARDABLE     "cur304.cur"
+305                     CURSOR  DISCARDABLE     "cur305.cur"
+306                     CURSOR  DISCARDABLE     "cur306.cur"
+307                     CURSOR  DISCARDABLE     "cur307.cur"
+308                     CURSOR  DISCARDABLE     "cur308.cur"
+309                     CURSOR  DISCARDABLE     "cur309.cur"
+310                     CURSOR  DISCARDABLE     "cur310.cur"
+313                     CURSOR  DISCARDABLE     "cur313.cur"
+315                     CURSOR  DISCARDABLE     "cur315.cur"
+316                     CURSOR  DISCARDABLE     "cur316.cur"
+317                     CURSOR  DISCARDABLE     "cur317.cur"
+318                     CURSOR  DISCARDABLE     "cur318.cur"
+319                     CURSOR  DISCARDABLE     "cur319.cur"
+320                     CURSOR  DISCARDABLE     "cur320.cur"
+321                     CURSOR  DISCARDABLE     "cur321.cur"
+322                     CURSOR  DISCARDABLE     "cur322.cur"
+323                     CURSOR  DISCARDABLE     "cur323.cur"
+324                     CURSOR  DISCARDABLE     "cur324.cur"
+325                     CURSOR  DISCARDABLE     "cur325.cur"
+326                     CURSOR  DISCARDABLE     "cur326.cur"
+327                     CURSOR  DISCARDABLE     "cur327.cur"
+328                     CURSOR  DISCARDABLE     "cur328.cur"
+329                     CURSOR  DISCARDABLE     "cur329.cur"
+330                     CURSOR  DISCARDABLE     "cur330.cur"
+333                     CURSOR  DISCARDABLE     "cur333.cur"
+334                     CURSOR  DISCARDABLE     "cur334.cur"
+335                     CURSOR  DISCARDABLE     "cur335.cur"
+337                     CURSOR  DISCARDABLE     "cur337.cur"
+338                     CURSOR  DISCARDABLE     "cur338.cur"
+339                     CURSOR  DISCARDABLE     "cur339.cur"
+341                     CURSOR  DISCARDABLE     "cur341.cur"
+342                     CURSOR  DISCARDABLE     "cur342.cur"
+343                     CURSOR  DISCARDABLE     "cur343.cur"
+344                     CURSOR  DISCARDABLE     "cur344.cur"
+345                     CURSOR  DISCARDABLE     "cur345.cur"
+346                     CURSOR  DISCARDABLE     "cur346.cur"
+347                     CURSOR  DISCARDABLE     "cur347.cur"
+348                     CURSOR  DISCARDABLE     "cur348.cur"
+349                     CURSOR  DISCARDABLE     "cur349.cur"
+350                     CURSOR  DISCARDABLE     "cur350.cur"
+351                     CURSOR  DISCARDABLE     "cur351.cur"
+352                     CURSOR  DISCARDABLE     "cur352.cur"
+353                     CURSOR  DISCARDABLE     "cur353.cur"
+354                     CURSOR  DISCARDABLE     "cur354.cur"
+355                     CURSOR  DISCARDABLE     "cur355.cur"
+356                     CURSOR  DISCARDABLE     "cur356.cur"
+357                     CURSOR  DISCARDABLE     "cur357.cur"
+358                     CURSOR  DISCARDABLE     "cur358.cur"
+362                     CURSOR  DISCARDABLE     "cur362.cur"
+363                     CURSOR  DISCARDABLE     "cur363.cur"
+364                     CURSOR  DISCARDABLE     "cur364.cur"
+365                     CURSOR  DISCARDABLE     "cur365.cur"
+367                     CURSOR  DISCARDABLE     "cur367.cur"
+368                     CURSOR  DISCARDABLE     "cur368.cur"
+369                     CURSOR  DISCARDABLE     "cur369.cur"
+371                     CURSOR  DISCARDABLE     "cur371.cur"
+374                     CURSOR  DISCARDABLE     "cur374.cur"
+380                     CURSOR  DISCARDABLE     "cur380.cur"
+381                     CURSOR  DISCARDABLE     "cur381.cur"
+382                     CURSOR  DISCARDABLE     "cur382.cur"
+383                     CURSOR  DISCARDABLE     "cur383.cur"
+384                     CURSOR  DISCARDABLE     "cur384.cur"
+385                     CURSOR  DISCARDABLE     "cur385.cur"
+386                     CURSOR  DISCARDABLE     "cur386.cur"
+387                     CURSOR  DISCARDABLE     "cur387.cur"
+389                     CURSOR  DISCARDABLE     "cur389.cur"
+390                     CURSOR  DISCARDABLE     "cur390.cur"
+391                     CURSOR  DISCARDABLE     "cur391.cur"
+392                     CURSOR  DISCARDABLE     "cur392.cur"
+393                     CURSOR  DISCARDABLE     "cur393.cur"
+394                     CURSOR  DISCARDABLE     "cur394.cur"
+395                     CURSOR  DISCARDABLE     "cur395.cur"
+396                     CURSOR  DISCARDABLE     "cur396.cur"
+397                     CURSOR  DISCARDABLE     "cur397.cur"
+398                     CURSOR  DISCARDABLE     "cur398.cur"
+#endif    // Neutral (Default) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

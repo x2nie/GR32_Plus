@@ -1,0 +1,103 @@
+Based on the newsgroup post (March 18, 2002,  news://news.g32.org/g32org.public.graphics32)
+ <public@lischke-online.de ; <news:a755io$6t1$1@webserver9.elitedev.com>...
+----
+
+Hi all,
+
+recently I posted two images here to show a new layers concept I have worked
+out. Now that I have finished my work on it and because I want to give back
+something for what I got when using Graphics32 I decided to publish my
+source code.
+
+Note however: the code I'm presenting here is not fully bug free nor can it
+be expected to work on all configurations, although I tried to make it as
+good as possible for what my time allowed. Additionally, I cannot give
+support for it nor will I be able to continue to work on it in the
+foreseeable future.
+
+What's now in there for you?
+
+The package (which you can download from
+www.lischke-online.de/download/GR32Ex.zip contains two units and an
+additional folder with cursors, all very similar to those used in Photoshop
+and most of them enhanced with a shadow for use under Windows XP and Win 2K.
+These cursors are automatically bound to your application when you add the
+GR32_Types.pas unit to your project. It checks for the system and loads
+either plain cursors or those with the alpha channel. Since there are 125
+cursors in the package the resulting res file is 470KB. Consider this when
+adding the cursors. But since they are made for image editing applications
+this doesn't matter probably.
+
+The other unit (GR32_ExtLayers.pas) contains a reimplementation of the
+layers used currently in Graphics32. The implementation starts from
+TCustomLayer and defines the following new:
+
+- TTransformationLayer (the base class from which all others are derived)
+- TGridLayer (derived from TTransformationLayer)
+- TExtRubberBandLayer (derived from TTransformationLayer)
+- TPropertyLayer (derived from TTransformationLayer)
+- TTextLayer (derived from TPropertyLayer)
+- TExtBitmapLayer (derived from TPropertyLayer)
+
+Additionally there is a slightly enhanced TAffineTransformation derivate
+(TExtAffineTransformation).
+
+Here a short description of all the layers:
+
+TTransformationLayer
+This layer is the fundament of the other enhanced layers and provides the
+functionality to translate, rotate, sheer (skew) and scale any layer. It
+supports a pivot point, which is the center for rotations and proportional
+transformations. Because of the rotation and sheer feature this and derived
+layers are slower in handling than the current layers, but my primary goal
+was to provide as many of the features of Photoshop as I could implement.
+
+TGridLayer
+This layer provides you with a customizable grid and support for guides.
+It allows to snap coordinates to either guides, grid lines or the image
+borders (just like in Photoshop). All features are switchable. This grid
+cannot be rotated however and is always axis aligned.
+
+TExtRubberBandLayer
+This layer is a much enhanced reimplementation of the current rubberband
+and supports almost anything what Photoshop allows. This includes to
+visually rotate and scale images (negative scale values will mirror them).
+It supports grid snapping of the four corners and the center, regardless of
+the transformation state and correctly handles all the difficult cases for
+cursor and hit test managment. The shift and control keys are supported as
+well, to limit rotation to 45? multiples, to allow skewing the image and to
+make proportional scaling possible (width/height ration of the layer is
+constant). To make the support complete also the Alt key will be considered,
+with the same effect as in, you guess it, Photoshop (e.g. sizing is done to
+all four directions, with the pivot as center etc.).
+NOTE: the rubber band uses many of the cursors in the GR32_Types.pas unit!
+
+TPropertyLayer
+This layer is a generic ancestor for the following layers and only stores
+some properties, which might be used, e.g. when loading PSD files.
+
+TTextLayer
+This layer is not really implemented, but used as a placeholder. Once
+somebody decides to write a real text layer, this one can serve as the
+starting point.
+
+TExtBitmapLayer
+This is the last layer in the bundle and provides means to paint a
+TBitmap32 with all the transformations applied. Additionally, it has a
+PaintTo method, which allows to draw the content to other locations than the
+ImgView32 container.
+
+I have also included a draw mode property in the property layer, which is
+not directly implemented in the extended layer unit. Instead it can be used
+by the application to determine the draw mode (e.g. blend, subtract, add,
+multiply etc.) which should be applied to the layer's pixel.
+
+OK, that's it so far. I hope you like what I have here and also hope it gets
+much extended in the future (then perhaps also with the new G32 lib).
+
+Ciao, Mike
+--
+www.delphi-gems.com 
+www.lischke-online.de 
+www.delphi-unicode.net 
+
