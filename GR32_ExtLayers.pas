@@ -1626,7 +1626,7 @@ var
   LastPosition: TFloatPoint;
   LastRotation: Single;
   AbsCurrentAnchor, AnchorCurrent, AnchorNew, AnchorOld, NewPivot,
-  LastScaling: TFloatPoint;
+  LastPivot, LastScaling: TFloatPoint;
   P : TPoint;
   FR : TFloatRect;
 
@@ -1667,6 +1667,7 @@ begin
     LastPosition := FPosition;
     LastRotation := FAngle;
     LastScaling := FScaling;
+    LastPivot := FPivotPoint;
 
     //Changing;
 
@@ -1979,6 +1980,7 @@ begin
     // Invalidate image data only for real changes.
     if (Abs(LastPosition.X - FPosition.X + LastPosition.Y - FPosition.Y) > Epsilon) or
       (Abs(LastRotation - FAngle) > Epsilon) or
+      (Abs(LastPivot.X - FPivotPoint.X + LastPivot.Y - FPivotPoint.Y) > Epsilon) or
       (Abs(LastScaling.X - FScaling.X + LastScaling.Y - FScaling.Y) > Epsilon) then
     begin
       UpdateChildLayer;
