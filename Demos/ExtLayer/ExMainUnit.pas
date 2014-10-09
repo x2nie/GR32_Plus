@@ -146,8 +146,6 @@ type
     procedure MnuSimpleDrawingClick(Sender: TObject);
     procedure ScaleComboChange(Sender: TObject);
     procedure MnuButtonMockupClick(Sender: TObject);
-    procedure ImgViewMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer; Layer: TCustomLayer);
   private
     FSelection: TTransformationLayer;
     procedure SetSelection(Value: TTransformationLayer);
@@ -1122,13 +1120,6 @@ const
   RepaintMode: array[Boolean] of TRepaintMode = (rmFull, rmOptimizer);
 begin
   ImgView.RepaintMode := RepaintMode[CbxOptRedraw.Checked];
-end;
-
-procedure TMainForm.ImgViewMouseMove(Sender: TObject; Shift: TShiftState;
-  X, Y: Integer; Layer: TCustomLayer);
-begin
-  if Assigned(Selection) then
-    Caption := IntToStr(Round(Selection.Angle));
 end;
 
 end.

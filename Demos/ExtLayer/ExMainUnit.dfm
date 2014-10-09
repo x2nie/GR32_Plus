@@ -22,7 +22,6 @@ object MainForm: TMainForm
     Top = 0
     Width = 664
     Height = 583
-    Hint = 'OWEW'
     Align = alClient
     Bitmap.ResamplerClassName = 'TNearestResampler'
     BitmapAlign = baCustom
@@ -37,7 +36,6 @@ object MainForm: TMainForm
     TabOrder = 0
     TabStop = True
     OnMouseDown = ImgViewMouseDown
-    OnMouseMove = ImgViewMouseMove
     OnMouseWheelDown = ImgViewMouseWheelDown
     OnMouseWheelUp = ImgViewMouseWheelUp
     OnPaintStage = ImgViewPaintStage
