@@ -290,6 +290,7 @@ type
     procedure Paint(Buffer: TBitmap32); override;
     function SnapPosition: Boolean;
     procedure UpdateChildLayer;
+    procedure SetLayerOptions(Value: Cardinal); override;
   public
     constructor Create(LayerCollection: TLayerCollection); override;
     destructor Destroy; override;
@@ -1987,10 +1988,11 @@ begin
 
       Changing;
       UpdateTransformation;
-      Changed(FTransformedBound); // Layer collection.
+      //Changed(FTransformedBound); // Layer collection.
 
 //      UpdateChildLayer;
-//x2nie      Changed;
+//x2nie
+      Changed;
 
       //UpdateTransformation;
       //Changed(FTransformedBound); // Layer collection.
@@ -2301,8 +2303,8 @@ begin
     begin
 
       FChildLayer.UpdateTransformation;
-      FChildLayer.Changed(FChildLayer.FTransformedBound); // Layer collection.
-      //FChildLayer.Changed; // trigger for LayerCollection
+      //FChildLayer.Changed(FChildLayer.FTransformedBound); // Layer collection.
+      FChildLayer.Changed; // trigger for LayerCollection
       FChildLayer.DoChange; // trigger for Layer
       
     end;
@@ -2533,5 +2535,11 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
+
+procedure TExtRubberBandLayer.SetLayerOptions(Value: Cardinal);
+begin
+  Value := Value and not LOB_NO_UPDATE; // workaround for changed behaviour
+  inherited SetLayerOptions(Value);
+end;
 
 end.
