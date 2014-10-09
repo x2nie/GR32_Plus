@@ -626,12 +626,6 @@ var
 begin
   FTransformation.Clear;
 
-{  FTransformation.Translate(-FPivotPoint.X, -FPivotPoint.Y);
-  FTransformation.Scale(FScaling.X, FScaling.Y);
-  FTransformation.Skew(FSkew.X, FSkew.Y);
-  FTransFormation.Rotate(0, 0, FAngle);
-  FTransformation.Translate(FPosition.X + FPivotPoint.X, FPosition.Y + FPivotPoint.Y);}
-
   FTransformation.Translate(-FPivotPoint.X, -FPivotPoint.Y);
   FTransformation.Scale(FScaling.X, FScaling.Y);
   FTransformation.Skew(FSkew.X, FSkew.Y);
@@ -650,8 +644,6 @@ begin
   end;
 
   FTransformedBound:= MakeRect( FTransformation.GetTransformedBounds({FloatRect(Bitmap.BoundsRect)}) );
-  //ClipRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
-  //IntersectRect(FTransformedBound, ClipRect, FTransformedBound);
 
 end;
 
@@ -1650,20 +1642,11 @@ var
   LastRotation: Single;
   AbsCurrentAnchor, AnchorCurrent, AnchorNew, AnchorOld, NewPivot,
   LastPivot, LastScaling: TFloatPoint;
-  P : TPoint;
   FR : TFloatRect;
 
 begin
   if not TAffineTransformationAccess(FTransformation).TransformValid then
     TAffineTransformationAccess(FTransformation).PrepareTransform;
-  P := FTransformation.ReverseTransform(Point(x,y));
-  TCustomImgView32(LayerCollection.Owner).Hint := format('mouse pos: %d,%d   Transformed: %d,%d',[x,y, p.x, p.y]);
-  begin
-
-//    Canvas.Pen.Mode := pmNotXor;
-//    Canvas.MoveTo(X,0); Canvas.LineTo(X,Height);
-//    Canvas.MoveTo(0,Y); Canvas.LineTo(Width,Y);
-  end;
 
   if not FIsDragging then
   begin
@@ -1771,95 +1754,6 @@ begin
           FPosition.X   := FOldPosition.X + (FOldAnchor.X - AnchorNew.X);
           FPosition.Y   := FOldPosition.Y + (FOldAnchor.Y - AnchorNew.Y);
 
-          (*
-          FTransformation.Clear;
-          FTransFormation.Rotate(FOldPivot.X, FOldPivot.X, FOldAngle);
-          AnchorOld := FTransformation.GetTransformedBounds.TopLeft; //Target
-
-
-          FTransformation.Clear;
-          FTransFormation.Rotate(NewPivot.X, NewPivot.X, FOldAngle);
-          AnchorNew := FTransformation.GetTransformedBounds.TopLeft; //Target
-
-
-          FPosition.X   := FOldPosition.X + (AnchorOld.X - AnchorNew.X);
-          FPosition.Y   := FOldPosition.Y + (AnchorOld.Y - AnchorNew.Y);
-
-
-          
-          //FPivotPoint.X := FOldPivot.X + dX;
-          //FPivotPoint.Y := FOldPivot.Y + dY;
-          //AnchorCurrent := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
-          //AbsCurrentAnchor := FTransformation.ReverseTransform(AnchorCurrent);
-
-
-          // the idea: Get new top left if newpivot applied:
-          // 2.a : remove position to zero
-          FTransformation.Translate( -(FPivotPoint.X{+ FPosition.X}), -(FPivotPoint.Y{+ FPosition.Y}));
-          //FTransformation.Translate( -({FOldPivot.X+} FoldPosition.X + dx), -({FOldPivot.Y+} FOldPosition.Y + dy));
-
-          // 2.b : get the old top left
-          //FTransformation.Translate( (FOldPivot.X+ FOldPosition.X), (FOldPivot.Y+ FOldPosition.Y));
-          FTransformation.Translate( (NewPivot.X{+ FOldPosition.X}), (NewPivot.Y{+ FOldPosition.Y}));
-          //AnchorOld     := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
-          TAffineTransformationAccess(FTransformation).PrepareTransform;
-
-          //FTransformation
-          AnchorCurrent := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
-          //AbsCurrentAnchor := FTransformation.ReverseTransform(AnchorCurrent);
-          AbsCurrentAnchor.X := AnchorCurrent.X - FPosition.X;
-          AbsCurrentAnchor.Y := AnchorCurrent.Y - FPosition.Y;
-
-          //FTransformation.Translate( NewPivot.X, NewPivot.Y);
-          //AnchorNew     := FTransformation.GetTransformedBounds.TopLeft; //top left corner as anchor
-
-          //FPosition.X   := AnchorCurrent.X - AnchorNew.X {- NewPivot.X};
-          //FPosition.Y   := AnchorCurrent.Y - AnchorNew.Y {- NewPivot.Y};
-
-          FPosition.X   := FOldPosition.X + AnchorCurrent.X - FOldAnchor.X {- NewPivot.X};
-          FPosition.Y   := FOldPosition.Y + AnchorCurrent.Y - FOldAnchor.Y {- NewPivot.Y};
-
-          {
-          FPosition.X   := FOldPosition.X + (NewPivot.X - FOldPivot.X);
-          FPosition.Y   := FOldPosition.Y + (NewPivot.Y - FOldPivot.Y);
-
-          FPosition.X   := (FOldPosition.X - FOldPivot.X)+ NewPivot.X ;
-          FPosition.Y   := (FOldPosition.Y - FOldPivot.Y)+ NewPivot.Y;
-          }
-
-          FPosition.X   := FOldPosition.X + AnchorCurrent.X - FOldAnchor.X {- NewPivot.X};
-          FPosition.Y   := FOldPosition.Y + AnchorCurrent.Y - FOldAnchor.Y {- NewPivot.Y};
-
-
-          FPosition.X   := FOldPosition.X - (AbsCurrentAnchor.X - FOldAbsAnchor.X );
-          FPosition.Y   := FOldPosition.Y - (AbsCurrentAnchor.Y - FOldAbsAnchor.Y) ;
-
-
-          //==============================
-          FTransformation.Clear;
-          //FTransformation.Translate( (NewPivot.X{+ FOldPosition.X}), (NewPivot.Y{+ FOldPosition.Y}));
-          FTransFormation.Rotate(NewPivot.X, NewPivot.X, FAngle);
-          AbsCurrentAnchor := FTransformation.GetTransformedBounds.TopLeft; //Target
-
-          FPosition.X   := FOldPosition.X + AbsCurrentAnchor.X;
-          FPosition.Y   := FOldPosition.Y + AbsCurrentAnchor.Y;
-
-          //FPosition.X   := FOldPosition.X - (AbsCurrentAnchor.X - FOldAbsAnchor.X );
-          //FPosition.Y   := FOldPosition.Y - (AbsCurrentAnchor.Y - FOldAbsAnchor.Y) ;
-
-           
-          //FR := FTransformation.GetTransformedBounds(FloatRect(FP,FP));
-          //FPivotPoint :=FR.TopLeft ;
-          P := Point(AbsCurrentAnchor);
-          with TCustomImgView32(LayerCollection.Owner)do
-          begin
-
-            //Canvas.Pen.Mode := pmNotXor;
-            Canvas.MoveTo(P.X,0); Canvas.LineTo(P.X,Height);
-            Canvas.MoveTo(0,P.Y); Canvas.LineTo(Width,P.Y);
-          end;
-
-          *)
         end;
       rdsResizeN:
         begin
@@ -2010,15 +1904,8 @@ begin
 
       Changing;
       UpdateTransformation;
-      //Changed; // Layer collection.
-
-//      UpdateChildLayer;
-//x2nie
-      Changed;
-
-      //UpdateTransformation;
-      //Changed; // Layer collection.
-      //Changed;
+      Changed; // Layer collection.
+      
     end;
   end;
 
@@ -2142,20 +2029,6 @@ var
       YNew := Matrix[0, 1] * X + Matrix[1, 1] * Y + Matrix[2, 1];
     end;
 
-{    if FScaled and Assigned(LayerCollection) then
-    begin
-      LayerCollection.GetViewportScale(XNew, YNew);
-      LayerCollection.GetViewportShift(ShiftX, ShiftY);
-      XNew := XNew * X + ShiftX;
-      YNew := YNew * Y + ShiftY;
-    end
-    else
-    begin
-      XNew := X;
-      YNew := Y;
-    end;}
-
-    //DrawIconEx(Buffer.Handle, Round(XNew - 8), Round(YNew - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
     Buffer.Draw(Round(XNew - 8), Round(YNew - 8), GetPivotBitmap() );
   end;
 
@@ -2326,7 +2199,6 @@ begin
     begin
 
       FChildLayer.UpdateTransformation;
-      //FChildLayer.Changed(FChildLayer.FTransformedBound); // Layer collection.
       FChildLayer.Changed; // trigger for LayerCollection
       FChildLayer.DoChange; // trigger for Layer
       
@@ -2503,22 +2375,11 @@ var ImageRect, DstRect : TRect;
   ClipRect: TRect;
 begin
   UpdateTransformation;
-  {ImageRect := TCustomImage32(TLayerCollectionCast(LayerCollection).Owner).GetBitmapRect;
-  ClipRect := Buffer.ClipRect;
-  IntersectRect(ClipRect, ClipRect, ImageRect);
-  IntersectRect(ClipRect, ClipRect, FTransformedBound);
-  // TODO: cropping
- // if not TAffineTransformationAccess(FTransformation).TransformValid then
-   // TAffineTransformationAccess(FTransformation).PrepareTransform;
-  }
 
-
-  //DstRect := MakeRect(FInViewPortTransformation.GetTransformedBounds);
-  //DstRect := MakeRect(EdgesToFloatRect(LTransformer.Edges));
   ClipRect := Buffer.ClipRect;
   IntersectRect(ClipRect, ClipRect, FTransformedBound);
   if IsRectEmpty(ClipRect) then Exit;
-  
+
   if Cropped and (LayerCollection.Owner is TCustomImage32) and
     not (TImage32Access(LayerCollection.Owner).PaintToMode) then
   begin
@@ -2528,9 +2389,6 @@ begin
   end;
 
   Transform(Buffer, FBitmap, FTransformation,ClipRect);
-  
-
-
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
