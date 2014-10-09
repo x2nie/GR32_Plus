@@ -2132,59 +2132,6 @@ var
     DrawIconEx(Buffer.Handle, Round(XNew - 8), Round(YNew - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
   end;
 
-  procedure DrawPositionMark(X, Y: Single);
-
-  // Special version for the pivot image. Also this image is neither rotated nor scaled.
-
-  var
-    XNew, YNew, ShiftX, ShiftY: Single;
-  begin
-    if FScaled and Assigned(LayerCollection) then
-    begin
-      LayerCollection.GetViewportScale(XNew, YNew);
-      LayerCollection.GetViewportShift(ShiftX, ShiftY);
-      XNew := XNew * X + ShiftX;
-      YNew := YNew * Y + ShiftY;
-    end
-    else
-    begin
-      XNew := X;
-      YNew := Y;
-    end;
-
-    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
-      Round(YNew + FHandleSize), clLime32);
-  end;
-
-  procedure DrawTransformedPosition(X, Y: Single);
-
-  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
-
-  var
-    XNew, YNew: Single;
-
-  begin
-    with FTransformation do
-    begin
-      XNew := Matrix[0, 0] * X + Matrix[1, 0] * Y + Matrix[2, 0];
-      YNew := Matrix[0, 1] * X + Matrix[1, 1] * Y + Matrix[2, 1];
-    end;
-
-    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
-      Round(YNew + FHandleSize), clRed32);
-  end;
-
-  procedure DrawBlinddPosition(X, Y: Single; color:TColor32);
-
-  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
-
-  var
-    XNew, YNew: Single;
-
-  begin
-    Buffer.FillRectS(Round(X - FHandleSize), Round(Y - FHandleSize), Round(X + FHandleSize),
-      Round(Y + FHandleSize), color);
-  end;
   //--------------- end local functions ---------------------------------------
 
 var
@@ -2228,11 +2175,6 @@ begin
   if rboAllowPivotMove in FOptions then
     DrawPivot(FPivotPoint.X, FPivotPoint.Y);
 
-  //debug
-  DrawBlinddPosition(Self.Position.X, self.Position.y, clYellow32);
-  DrawPositionMark(Self.Position.X, self.Position.y);
-  //DrawTransformedPosition(Self.Position.X, self.Position.y);
-  DrawBlinddPosition(FPivotPoint.X, FPivotPoint.Y, clAqua32);
 end;
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -2529,61 +2471,6 @@ end;
 //----------------------------------------------------------------------------------------------------------------------
 
 procedure TExtBitmapLayer.Paint(Buffer: TBitmap32);
-const FHandleSize = 20;
-  procedure DrawPositionMark(X, Y: Single);
-
-  // Special version for the pivot image. Also this image is neither rotated nor scaled.
-
-  var
-    XNew, YNew, ShiftX, ShiftY: Single;
-  begin
-    if FScaled and Assigned(LayerCollection) then
-    begin
-      LayerCollection.GetViewportScale(XNew, YNew);
-      LayerCollection.GetViewportShift(ShiftX, ShiftY);
-      XNew := XNew * X + ShiftX;
-      YNew := YNew * Y + ShiftY;
-    end
-    else
-    begin
-      XNew := X;
-      YNew := Y;
-    end;
-
-    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
-      Round(YNew + FHandleSize), clTrRed32);
-  end;
-
-  procedure DrawTransformedPosition(X, Y: Single);
-
-  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
-
-  var
-    XNew, YNew: Single;
-
-  begin
-    with FTransformation do
-    begin
-      XNew := Matrix[0, 0] * X + Matrix[1, 0] * Y + Matrix[2, 0];
-      YNew := Matrix[0, 1] * X + Matrix[1, 1] * Y + Matrix[2, 1];
-    end;
-
-    Buffer.FillRectS(Round(XNew - FHandleSize), Round(YNew - FHandleSize), Round(XNew + FHandleSize),
-      Round(YNew + FHandleSize), clTrRed32);
-  end;
-
-  procedure DrawBlinddPosition(X, Y: Single);
-
-  // Special version fror handle vertex calculation. Handles are fixed sized and not rotated.
-
-  var
-    XNew, YNew: Single;
-
-  begin
-    Buffer.FillRectS(Round(X - FHandleSize), Round(Y - FHandleSize), Round(X + FHandleSize),
-      Round(Y + FHandleSize), clTrWhite32);
-  end;
-  //--------------- end local functions ---------------------------------------
 
 var ImageRect : TRect;
   ClipRect: TRect;
@@ -2598,9 +2485,7 @@ begin
    // TAffineTransformationAccess(FTransformation).PrepareTransform;
   Transform(Buffer, FBitmap, FTransformation,ClipRect);
   
-  DrawBlinddPosition(Self.Position.X, self.Position.y);
-  DrawPositionMark(Self.Position.X, self.Position.y);
-//  DrawTransformedPosition(Self.Position.X, self.Position.y);
+
 
 end;
 
