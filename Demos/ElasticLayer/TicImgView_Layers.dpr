@@ -1,6 +1,6 @@
 program TicImgView_Layers;
 
-{.$R 'Media.res' 'Media.rc'}
+{$R 'Media.res' 'Media.rc'}
 
 uses
   Forms,

@@ -1,9 +1,9 @@
 object MainForm: TMainForm
-  Left = 262
-  Top = 199
+  Left = 273
+  Top = 149
   Width = 738
   Height = 569
-  Caption = 'Tic Image View Layers Example'
+  Caption = '(Tic) Image View Elastic_Layers Example'
   Color = clBtnFace
   Constraints.MinHeight = 380
   Constraints.MinWidth = 555
