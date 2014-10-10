@@ -288,6 +288,24 @@ type
   TLayerCollectionAccess = class(TLayerCollection);
   TImage32Access = class(TCustomImage32);
 
+var
+  UPivotBitmap : TBitmap32 = nil;
+
+function GetPivotBitmap : TBitmap32;
+begin
+  if not Assigned(UPivotBitmap) then
+  begin
+    UPivotBitmap := TBitmap32.Create;
+    UPivotBitmap.SetSize(16,16);
+    UPivotBitmap.Clear(0);
+    UPivotBitmap.DrawMode := dmBlend;
+
+    DrawIconEx(UPivotBitmap.Handle, 0,0, Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+  end;
+
+  Result := UPivotBitmap;
+end;
+  
 function SafelyGetEdgeIndex(AIndex: integer):integer;
 begin
   Result := AIndex;
@@ -2765,7 +2783,8 @@ var
       YNew := Y;
     end;}
     with GetPivotTransformed() do
-    DrawIconEx(Buffer.Handle, Round(X - 8), Round(Y - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+      //DrawIconEx(Buffer.Handle, Round(X - 8), Round(Y - 8), Screen.Cursors[crGrCircleCross], 0, 0, 0, 0, DI_NORMAL);
+      Buffer.Draw(Round(X - 8), Round(Y - 8), GetPivotBitmap() );
   end;
 
   
@@ -2940,4 +2959,9 @@ begin
   end;
 end;
 
+initialization
+
+finalization
+  if Assigned(UPivotBitmap) then
+    UPivotBitmap.Free;
 end.
