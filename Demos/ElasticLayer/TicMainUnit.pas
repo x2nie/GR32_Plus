@@ -234,12 +234,12 @@ procedure TMainForm.FormCreate(Sender: TObject);
 
   procedure NewBitmapLayer();
   var
-    B: TTicBitmapLayer;
+    B: TElasticBitmapLayer;
     P: TPoint;
     W, H: Single;
   begin
     begin
-      B := TTicBitmapLayer.Create(ImgView.Layers);
+      B := TElasticBitmapLayer.Create(ImgView.Layers);
       with B do
       try
         Bitmap.LoadFromFile('..\Media\rectangles.bmp');
@@ -329,8 +329,8 @@ end;
 
 procedure TMainForm.CbxCroppedClick(Sender: TObject);
 begin
-  if Selection is TTicBitmapLayer then
-    TTicBitmapLayer(Selection).Cropped := CbxCropped.Checked;
+  if Selection is TElasticBitmapLayer then
+    TElasticBitmapLayer(Selection).Cropped := CbxCropped.Checked;
 end;
 
 procedure TMainForm.CbxImageInterpolateClick(Sender: TObject);
@@ -340,9 +340,9 @@ end;
 
 procedure TMainForm.CbxLayerInterpolateClick(Sender: TObject);
 begin
-  if Selection is TTicBitmapLayer then
+  if Selection is TElasticBitmapLayer then
   begin
-    RESAMPLER[CbxLayerInterpolate.Checked].Create(TTicBitmapLayer(Selection).Bitmap);
+    RESAMPLER[CbxLayerInterpolate.Checked].Create(TElasticBitmapLayer(Selection).Bitmap);
   end;
 end;
 
@@ -360,8 +360,8 @@ end;
 
 procedure TMainForm.LayerOpacityChanged(Sender: TObject);
 begin
-  if Selection is TTicBitmapLayer then
-    TTicBitmapLayer(Selection).Bitmap.MasterAlpha := GbrLayerOpacity.Position;
+  if Selection is TElasticBitmapLayer then
+    TElasticBitmapLayer(Selection).Bitmap.MasterAlpha := GbrLayerOpacity.Position;
 end;
 
 procedure TMainForm.BtnLayerRescaleClick(Sender: TObject);
@@ -369,8 +369,8 @@ var
   T: TBitmap32;
 begin
   // resize the layer's bitmap to the size of the layer
-  if Selection is TTicBitmapLayer then
-    with TTicBitmapLayer(Selection) do
+  if Selection is TElasticBitmapLayer then
+    with TElasticBitmapLayer(Selection) do
     begin
       T := TBitmap32.Create;
       T.Assign(Bitmap);
@@ -391,8 +391,8 @@ var
   L: TFloatRect;
 begin
   // resize the layer to the size of its bitmap
-  if Selection is TTicBitmapLayer then
-    with TTicBitmapLayer(Selection) do
+  if Selection is TElasticBitmapLayer then
+    with TElasticBitmapLayer(Selection) do
     begin
       {L := Location;
       L.Right := L.Left + Width;
@@ -422,7 +422,7 @@ begin
   MnuScaled.Enabled := B;
   MnuScaled.Checked := B and Selection.Scaled;
   MnuDelete.Enabled := B;
-  B := B and (Selection is TTicBitmapLayer);
+  B := B and (Selection is TElasticBitmapLayer);
   MnuFlipHorz.Enabled := B;
   MnuFlipVert.Enabled := B;
   MnuRotate90.Enabled := B;
@@ -492,14 +492,14 @@ end;
 
 procedure TMainForm.MnuNewBitmapLayerClick(Sender: TObject);
 var
-  B: TTicBitmapLayer;
+  B: TElasticBitmapLayer;
   P: TPoint;
   W, H: Single;
 begin
   with OpenPictureDialog do
     if Execute then
     begin
-      B := TTicBitmapLayer.Create(ImgView.Layers);
+      B := TElasticBitmapLayer.Create(ImgView.Layers);
       with B do
       try
         Bitmap.LoadFromFile(FileName);
@@ -530,7 +530,7 @@ end;
 
 procedure TMainForm.MnuNewBitmapRGBAClick(Sender: TObject);
 var
-  B: TTicBitmapLayer;
+  B: TElasticBitmapLayer;
   P: TPoint;
   Tmp: TBitmap32;
   W, H: Single;
@@ -544,7 +544,7 @@ begin
     ShowModal;
     if (ModalResult = mrOK) and not ImgRGB.Bitmap.Empty then
     begin
-      B := TTicBitmapLayer.Create(ImgView.Layers);
+      B := TElasticBitmapLayer.Create(ImgView.Layers);
       B.Bitmap := ImgRGB.Bitmap;
       B.Bitmap.DrawMode := dmBlend; 
 
@@ -840,8 +840,8 @@ begin
       //RBLayer.OnResizing := RBResizing;
       RBLayer.OnDblClick := LayerDblClick;
 
-      if Value is TTicBitmapLayer then
-        with TTicBitmapLayer(Value) do
+      if Value is TElasticBitmapLayer then
+        with TElasticBitmapLayer(Value) do
         begin
           pnlBitmapLayer.Visible := True;
           GbrLayerOpacity.Position := Bitmap.MasterAlpha;
@@ -1080,14 +1080,14 @@ end;
 
 procedure TMainForm.MnuFlipHorzClick(Sender: TObject);
 begin
-  if Selection is TTicBitmapLayer then
-    TTicBitmapLayer(Selection).Bitmap.FlipHorz;
+  if Selection is TElasticBitmapLayer then
+    TElasticBitmapLayer(Selection).Bitmap.FlipHorz;
 end;
 
 procedure TMainForm.MnuFlipVertClick(Sender: TObject);
 begin
-  if Selection is TTicBitmapLayer then
-    TTicBitmapLayer(Selection).Bitmap.FlipVert;
+  if Selection is TElasticBitmapLayer then
+    TElasticBitmapLayer(Selection).Bitmap.FlipVert;
 end;
 
 procedure TMainForm.MnuRotate90Click(Sender: TObject);
@@ -1109,8 +1109,8 @@ end;
 
 procedure TMainForm.MnuRotate180Click(Sender: TObject);
 begin
-  if Selection is TTicBitmapLayer then
-    TTicBitmapLayer(Selection).Bitmap.Rotate180;
+  if Selection is TElasticBitmapLayer then
+    TElasticBitmapLayer(Selection).Bitmap.Rotate180;
 end;
 
 procedure TMainForm.MnuRotate270Click(Sender: TObject);
@@ -1176,7 +1176,7 @@ end;
 
 function TMainForm.Src: TBitmap32;
 begin
-  result := TTicBitmapLayer(selection).Bitmap;
+  result := TElasticBitmapLayer(selection).Bitmap;
 end;
 
 procedure TMainForm.KernelClassNamesListClick(Sender: TObject);
@@ -1231,7 +1231,7 @@ procedure TMainForm.cbbBlendModeChange(Sender: TObject);
 begin
   if Assigned(Selection) then
   begin
-    TTicBitmapLayer(selection).BlendMode := TBlendMode32(cbbBlendMode.ItemIndex);
+    TElasticBitmapLayer(selection).BlendMode := TBlendMode32(cbbBlendMode.ItemIndex);
   end;
 end;
 
