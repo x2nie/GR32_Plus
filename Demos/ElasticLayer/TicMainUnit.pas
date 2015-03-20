@@ -176,14 +176,14 @@ type
     procedure KernelClassNamesListClick(Sender: TObject);
     procedure cbbBlendModeChange(Sender: TObject);
   private
-    FSelection: TTicLayer;
+    FSelection: TElasticLayer;
     function Src : TBitmap32;
-    procedure SetSelection(Value: TTicLayer);
+    procedure SetSelection(Value: TElasticLayer);
     procedure SetKernelParameter(Kernel: TCustomKernel);
     
   protected
-    RBLayer: TTicRubberBandLayer;
-    function CreatePositionedLayer: TTicLayer;
+    RBLayer: TElasticRubberBandLayer;
+    function CreatePositionedLayer: TElasticLayer;
     procedure LayerDblClick(Sender: TObject);
     procedure LayerMouseDown(Sender: TObject; Buttons: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -196,7 +196,7 @@ type
     procedure CreateNewImage(AWidth, AHeight: Integer; FillColor: TColor32);
     procedure OpenImage(const FileName: string);
 
-    property Selection: TTicLayer read FSelection write SetSelection;
+    property Selection: TElasticLayer read FSelection write SetSelection;
   end;
 
 var
@@ -311,7 +311,7 @@ begin
   end;
 end;
 
-function TMainForm.CreatePositionedLayer: TTicLayer;
+function TMainForm.CreatePositionedLayer: TElasticLayer;
 var
   P: TPoint;
 begin
@@ -348,14 +348,14 @@ end;
 
 procedure TMainForm.LayerDblClick(Sender: TObject);
 begin
-  if Sender is TTicRubberBandLayer then
+  if Sender is TElasticRubberBandLayer then
 ///    TExtRubberBandLayer(Sender).Quantize;
 end;
 
 procedure TMainForm.LayerMouseDown(Sender: TObject; Buttons: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if Sender <> nil then Selection := TTicLayer(Sender);
+  if Sender <> nil then Selection := TElasticLayer(Sender);
 end;
 
 procedure TMainForm.LayerOpacityChanged(Sender: TObject);
@@ -432,7 +432,7 @@ end;
 
 procedure TMainForm.MnuButtonMockupClick(Sender: TObject);
 var
-  L: TTicLayer;
+  L: TElasticLayer;
 begin
   L := CreatePositionedLayer;
   L.OnPaint := PaintButtonMockupHandler;
@@ -442,7 +442,7 @@ end;
 
 procedure TMainForm.MnuDeleteClick(Sender: TObject);
 var
-  ALayer: TTicLayer;
+  ALayer: TElasticLayer;
 begin
   if Selection <> nil then
   begin
@@ -482,7 +482,7 @@ end;
 
 procedure TMainForm.MnuMagnifierClick(Sender: TObject);
 var
-  L: TTicLayer;
+  L: TElasticLayer;
 begin
   L := CreatePositionedLayer;
   L.OnPaint := PaintMagnifierHandler;
@@ -599,7 +599,7 @@ end;
 
 procedure TMainForm.MnuSimpleDrawingClick(Sender: TObject);
 var
-  L: TTicLayer;
+  L: TElasticLayer;
 begin
   L := CreatePositionedLayer;
   L.OnPaint := PaintSimpleDrawingHandler;
@@ -633,8 +633,8 @@ var
 const
   CScale = 1 / 200;
 begin
-  if Sender is TTicLayer then
-    with TTicLayer(Sender) do
+  if Sender is TElasticLayer then
+    with TElasticLayer(Sender) do
     begin
 {      Bounds := GetAdjustedLocation;
       InflateRect(Bounds, -1, -1);
@@ -805,7 +805,7 @@ begin
   ScaleCombo.SelStart := Length(ScaleCombo.Text) - 1;
 end;
 
-procedure TMainForm.SetSelection(Value: TTicLayer);
+procedure TMainForm.SetSelection(Value: TElasticLayer);
 begin
   if Value <> FSelection then
   begin
@@ -828,7 +828,7 @@ begin
     begin
       if RBLayer = nil then
       begin
-        RBLayer := TTicRubberBandLayer.Create(ImgView.Layers);
+        RBLayer := TElasticRubberBandLayer.Create(ImgView.Layers);
         RBLayer.Options :=rblayer.options +[rboAllowPivotMove];
         //RBLayer.MinHeight := 1;
         //RBLayer.MinWidth := 1;

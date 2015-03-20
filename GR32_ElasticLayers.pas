@@ -133,7 +133,7 @@ type
 
   TTicTransformation = class;
 
-  TTicLayer = class(TCustomLayer)
+  TElasticLayer = class(TCustomLayer)
   private
     FScaled: Boolean;
     FCropped: Boolean;
@@ -174,7 +174,7 @@ type
   end;
 
 
-  TTicBitmapLayer = class(TTicLayer)
+  TElasticBitmapLayer = class(TElasticLayer)
   private
     FBitmap: TBitmap32;
     FBlendMode: TBlendMode32;
@@ -193,9 +193,9 @@ type
     property BlendMode : TBlendMode32 read FBlendMode write SetBlendMode;
   end;
 
-  TTicRubberBandLayer = class(TTicLayer)
+  TElasticRubberBandLayer = class(TElasticLayer)
   private
-    FChildLayer: TTicLayer;
+    FChildLayer: TElasticLayer;
     // Drag/resize support
     FIsDragging: Boolean;
     FOldEdges : TArrayOfFloatPoint;
@@ -220,7 +220,7 @@ type
     FHandleFrame: TColor;
     FHandleFill: TColor;
 
-    procedure SetChildLayer(const Value: TTicLayer);
+    procedure SetChildLayer(const Value: TElasticLayer);
     procedure SetOptions(const Value: TExtRubberBandOptions);
     procedure SetHandleFill(const Value: TColor);
     procedure SetHandleFrame(const Value: TColor);
@@ -243,7 +243,7 @@ type
   public
     constructor Create(ALayerCollection: TLayerCollection); override;
     //destructor Destroy; override;
-    property ChildLayer: TTicLayer read FChildLayer write SetChildLayer;
+    property ChildLayer: TElasticLayer read FChildLayer write SetChildLayer;
     property Options: TExtRubberBandOptions read FOptions write SetOptions default DefaultRubberbandOptions;
     property HandleSize: Integer read FHandleSize write SetHandleSize default 3;
     property HandleFill: TColor read FHandleFill write SetHandleFill default clWhite;
@@ -1087,7 +1087,7 @@ end;
 
 
 
-function ResizeByCorner(Sender: TTicLayer; AEdges : TArrayOfFloatPoint; Mid: Integer; dx, dy : TFloat;
+function ResizeByCorner(Sender: TElasticLayer; AEdges : TArrayOfFloatPoint; Mid: Integer; dx, dy : TFloat;
   Straight, OddCompass: Boolean): TArrayOfFloatPoint;
 var
   //Global var used inside this functions.
@@ -1377,7 +1377,7 @@ end;
 
 { TTicLayer }
 
-constructor TTicLayer.Create(ALayerCollection: TLayerCollection);
+constructor TElasticLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
   LayerOptions := LOB_VISIBLE or LOB_MOUSE_EVENTS;  
@@ -1386,18 +1386,18 @@ begin
   
 end;
 
-destructor TTicLayer.Destroy;
+destructor TElasticLayer.Destroy;
 begin
   FTransformation.Free;
   inherited;
 end;
 
-procedure TTicLayer.DoSetEdges(const Value: TArrayOfFloatPoint);
+procedure TElasticLayer.DoSetEdges(const Value: TArrayOfFloatPoint);
 begin
   FTransformation.Edges := Value;
 end;
 
-function TTicLayer.GetScaledEdges: TArrayOfFloatPoint;
+function TElasticLayer.GetScaledEdges: TArrayOfFloatPoint;
 var
   ScaleX, ScaleY, ShiftX, ShiftY: TFloat;
   i : Integer;
@@ -1419,7 +1419,7 @@ begin
   end;
 end;
 
-function TTicLayer.GetScaledRect(const R: TFloatRect): TFloatRect;
+function TElasticLayer.GetScaledRect(const R: TFloatRect): TFloatRect;
 var
   ScaleX, ScaleY, ShiftX, ShiftY: TFloat;
 begin
@@ -1440,17 +1440,17 @@ begin
     Result := R;
 end;
 
-function TTicLayer.GetEdges: TArrayOfFloatPoint;
+function TElasticLayer.GetEdges: TArrayOfFloatPoint;
 begin
   Result := FTransformation.Edges;
 end;
 
-function TTicLayer.GetSourceRect: TFloatRect;
+function TElasticLayer.GetSourceRect: TFloatRect;
 begin
   Result := FTransformation.SrcRect;
 end;
 
-function TTicLayer.GetTic(index: Integer): TFloatPoint;
+function TElasticLayer.GetTic(index: Integer): TFloatPoint;
 begin
   //Result.X  := FQuadX[index];
   //Result.Y  := FQuadY[index];
@@ -1458,12 +1458,12 @@ begin
 end;
 
 
-procedure TTicLayer.SetBounds(APosition, ASize: TFloatPoint);
+procedure TElasticLayer.SetBounds(APosition, ASize: TFloatPoint);
 begin
   SetBounds(FloatRect(APosition, FloatPoint(APosition.X+ ASize.X, APosition.Y+ ASize.Y) ));
 end;
 
-procedure TTicLayer.SetBounds(ABoundsRect: TFloatRect);
+procedure TElasticLayer.SetBounds(ABoundsRect: TFloatRect);
 begin
   BeginUpdate;
   try
@@ -1479,7 +1479,7 @@ begin
   end;
 end;
 
-procedure TTicLayer.SetCropped(const Value: Boolean);
+procedure TElasticLayer.SetCropped(const Value: Boolean);
 begin
   if Value <> FCropped then
   begin
@@ -1488,7 +1488,7 @@ begin
   end;
 end;
 
-procedure TTicLayer.SetEdges(const Value: TArrayOfFloatPoint);
+procedure TElasticLayer.SetEdges(const Value: TArrayOfFloatPoint);
 begin
   if Edges <> Value then
   begin
@@ -1499,7 +1499,7 @@ begin
   end;
 end;
 
-procedure TTicLayer.SetScaled(const Value: Boolean);
+procedure TElasticLayer.SetScaled(const Value: Boolean);
 begin
   if Value <> FScaled then
   begin
@@ -1510,14 +1510,14 @@ begin
 end;
 
 
-procedure TTicLayer.SetSourceRect(const Value: TFloatRect);
+procedure TElasticLayer.SetSourceRect(const Value: TFloatRect);
 begin
   Changing;
   FTransformation.SrcRect := Value;
   Changed;
 end;
 
-procedure TTicLayer.SetTic(index: Integer; const Value: TFloatPoint);
+procedure TElasticLayer.SetTic(index: Integer; const Value: TFloatPoint);
 begin
   Changing;
   //FQuadX[index] := Value.X;
@@ -1825,26 +1825,26 @@ end;
 
 { TTicBitmapLayer }
 
-procedure TTicBitmapLayer.BitmapChanged(Sender: TObject);
+procedure TElasticBitmapLayer.BitmapChanged(Sender: TObject);
 begin
   SourceRect := FloatRect(0, 0, Bitmap.Width - 1, Bitmap.Height - 1);
 end;
 
-constructor TTicBitmapLayer.Create(ALayerCollection: TLayerCollection);
+constructor TElasticBitmapLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
   FBitmap := TBitmap32.Create;
   FBitmap.OnChange := BitmapChanged;
 end;
 
-destructor TTicBitmapLayer.Destroy;
+destructor TElasticBitmapLayer.Destroy;
 begin
   FBitmap.Free;
   inherited;
 end;
 
 
-function TTicBitmapLayer.DoHitTest(X, Y: Integer): Boolean;
+function TElasticBitmapLayer.DoHitTest(X, Y: Integer): Boolean;
 
 var
   B: TPoint;
@@ -1858,7 +1858,7 @@ begin
 end;
 
 
-procedure TTicBitmapLayer.Paint(Buffer: TBitmap32);
+procedure TElasticBitmapLayer.Paint(Buffer: TBitmap32);
 var ImageRect : TRect;
   DstRect, ClipRect, TempRect: TRect;
   //LTransformer : TTicTransformation;
@@ -1937,14 +1937,14 @@ begin
 
 end;
 
-procedure TTicBitmapLayer.SetBitmap(const Value: TBitmap32);
+procedure TElasticBitmapLayer.SetBitmap(const Value: TBitmap32);
 begin
   Changing;
   FBitmap.Assign(Value);
   Changed;
 end;
 
-procedure TTicBitmapLayer.SetBlendMode(const Value: TBlendMode32);
+procedure TElasticBitmapLayer.SetBlendMode(const Value: TBlendMode32);
 begin
   if FBlendMode <> Value then
   begin
@@ -1967,7 +1967,7 @@ end;
 
 { TTicRubberBandLayer }
 
-constructor TTicRubberBandLayer.Create(ALayerCollection: TLayerCollection);
+constructor TElasticRubberBandLayer.Create(ALayerCollection: TLayerCollection);
 begin
   inherited;
   FThreshold := 8;
@@ -1978,7 +1978,7 @@ begin
   FPivotPoint := FloatPoint(0.5, 0.5);  
 end;
 
-procedure TTicRubberBandLayer.DoSetEdges(const Value: TArrayOfFloatPoint);
+procedure TElasticRubberBandLayer.DoSetEdges(const Value: TArrayOfFloatPoint);
 begin
   inherited;
   if Assigned(FChildLayer) then
@@ -2211,7 +2211,7 @@ begin
 end; *)
 
 
-function TTicRubberBandLayer.GetPivotOrigin: TFloatPoint;
+function TElasticRubberBandLayer.GetPivotOrigin: TFloatPoint;
 var
   W,H : TFloat;
 begin
@@ -2228,14 +2228,14 @@ begin
   end;
 end;
 
-function TTicRubberBandLayer.GetPivotTransformed: TFloatPoint;
+function TElasticRubberBandLayer.GetPivotTransformed: TFloatPoint;
 begin
   // get really (final) pivot position in Viewport space.
   // Note: FPivotPoint is always in range ( [0..1] , [0..1] ) when pivotPoint inside layer
   Result := FInViewPortTransformation.Transform( GetPivotOrigin );
 end;
 
-function TTicRubberBandLayer.GetRotatedCompass(
+function TElasticRubberBandLayer.GetRotatedCompass(
   LocalCompas: Integer): Integer;
 
   // it is used for correction of cursor while resizing/rotating being made.
@@ -2294,7 +2294,7 @@ begin
 end;
 
 
-function TTicRubberBandLayer.GetRotatedEdges(AEdges: TArrayOfFloatPoint;
+function TElasticRubberBandLayer.GetRotatedEdges(AEdges: TArrayOfFloatPoint;
     dx,dy : TFloat): TArrayOfFloatPoint;
 var
   LocalPivot, LPivot, P1,P2 : TFloatPoint;
@@ -2304,15 +2304,6 @@ var
   ShiftX, ShiftY, ScaleX, ScaleY: Single;
   i : Integer;
 begin
-  {
-    W A R N I N G !
-    all rotation should be made in non-vieport space
-
-    known bug:
-    rotating in ImgView.Scale <> 1
-  }
-
-
   //LocalPivot := GetPivotOrigin;
   //Pivot := GetPivotTransformed;
   //Pivot  := FTransformation.Transform(LocalPivot);
@@ -2390,7 +2381,7 @@ begin
   Affine.Free;
 end;
 
-procedure TTicRubberBandLayer.MouseDown(Button: TMouseButton;
+procedure TElasticRubberBandLayer.MouseDown(Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   if FIsDragging then Exit;
@@ -2411,7 +2402,7 @@ end;
 
 
 
-procedure TTicRubberBandLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
+procedure TElasticRubberBandLayer.MouseMove(Shift: TShiftState; X, Y: Integer);
 
 const
   MoveCursor: array [0..7] of TCursor = (
@@ -2663,7 +2654,7 @@ begin
 
 end;
 
-procedure TTicRubberBandLayer.MouseUp(Button: TMouseButton;
+procedure TElasticRubberBandLayer.MouseUp(Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   if FIsDragging then
@@ -2674,7 +2665,7 @@ begin
 
 end;
 
-procedure TTicRubberBandLayer.Paint(Buffer: TBitmap32);
+procedure TElasticRubberBandLayer.Paint(Buffer: TBitmap32);
 
 var
   //Contour: TContour;
@@ -2897,7 +2888,7 @@ begin
   }
 end;
 
-procedure TTicRubberBandLayer.SetChildLayer(const Value: TTicLayer);
+procedure TElasticRubberBandLayer.SetChildLayer(const Value: TElasticLayer);
 begin
   if Assigned(FChildLayer) then
     RemoveNotification(FChildLayer);
@@ -2926,7 +2917,7 @@ begin
   inherited PrepareTransform;
 end;}
 
-procedure TTicRubberBandLayer.SetHandleFill(const Value: TColor);
+procedure TElasticRubberBandLayer.SetHandleFill(const Value: TColor);
 begin
   if FHandleFill <> Value then
   begin
@@ -2935,7 +2926,7 @@ begin
   end;
 end;
 
-procedure TTicRubberBandLayer.SetHandleFrame(const Value: TColor);
+procedure TElasticRubberBandLayer.SetHandleFrame(const Value: TColor);
 begin
   if FHandleFrame <> Value then
   begin
@@ -2944,7 +2935,7 @@ begin
   end;
 end;
 
-procedure TTicRubberBandLayer.SetHandleSize(Value: Integer);
+procedure TElasticRubberBandLayer.SetHandleSize(Value: Integer);
 begin
   if Value < 1 then
     Value := 1;
@@ -2955,13 +2946,13 @@ begin
   end;
 end;
 
-procedure TTicRubberBandLayer.SetLayerOptions(Value: Cardinal);
+procedure TElasticRubberBandLayer.SetLayerOptions(Value: Cardinal);
 begin
   Value := Value and not LOB_NO_UPDATE; // workaround for changed behaviour
   inherited SetLayerOptions(Value);
 end;
 
-procedure TTicRubberBandLayer.SetOptions(
+procedure TElasticRubberBandLayer.SetOptions(
   const Value: TExtRubberBandOptions);
 begin
   if FOptions <> Value then
@@ -2976,7 +2967,7 @@ end;
 
 
 
-procedure TTicRubberBandLayer.SetPivotOrigin(Value: TFloatPoint);
+procedure TElasticRubberBandLayer.SetPivotOrigin(Value: TFloatPoint);
 var
   W,H : TFloat;
 begin
