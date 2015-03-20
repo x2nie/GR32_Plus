@@ -246,8 +246,11 @@ procedure TMainForm.FormCreate(Sender: TObject);
         Bitmap.DrawMode := dmBlend;
         //Bitmap.ResamplerClassName := 'TKernelResampler';
 
-        with ImgView.GetViewportRect do
-          P := ImgView.ControlToBitmap(GR32.Point((Right + Left) div 2, (Top + Bottom) div 2));
+        //with ImgView.GetViewportRect do
+          //P := ImgView.ControlToBitmap(GR32.Point((Right + Left) div 2, (Top + Bottom) div 2));
+
+        with ImgView.Bitmap do
+          P := ImgView.ControlToBitmap(GR32.Point(Width div 2, Height div 2));
 
         W := Bitmap.Width * 0.5;
         H := Bitmap.Height * 0.5;

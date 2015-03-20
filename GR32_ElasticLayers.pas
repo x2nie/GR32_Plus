@@ -210,6 +210,7 @@ type
     FDragPos: TPoint;                   // set on mouseDown
     FOriginDragPos,
     FOldOriginPivot,
+    FOldInViewPortPivot,
     FOldTransformedPivot : TFloatPoint;
     FMouseOverPos : TPoint;             // set on mouseMove
     FThreshold: Integer;
@@ -2316,13 +2317,15 @@ begin
   //Pivot := GetPivotTransformed;
   //Pivot  := FTransformation.Transform(LocalPivot);
   LPivot := FOldTransformedPivot;
-  LocalPivot := FOldOriginPivot;
+  //LocalPivot := FOldOriginPivot;
+  //LocalPivot := LPivot;
+  LocalPivot := FOldInViewPortPivot;
 
   P1 := FloatPoint(FDragPos);
   P2 := IncOf(P1, dx, dy);
 
   // Scale to non viewport if activated.
-  if Scaled and Assigned(LayerCollection) then
+  (*if Scaled and Assigned(LayerCollection) then
   begin
     LayerCollection.GetViewportScale(ScaleX, ScaleY);
     LayerCollection.GetViewportShift(ShiftX, ShiftY);
@@ -2334,7 +2337,9 @@ begin
     P1.Y := P1.Y / ScaleY - ShiftY;
     P2.X := P2.X / ScaleX - ShiftX;
     P2.Y := P2.Y / ScaleY - ShiftY;
-  end;
+    LocalPivot.X := LocalPivot.X / ScaleX - ShiftX;
+    LocalPivot.Y := LocalPivot.Y / ScaleY - ShiftY;
+  end;*)
   {
   //P1 := FInViewPortTransformation.ReverseTransform(FloatPoint(FDragPos));
   P1 := FOriginDragPos;
@@ -2346,11 +2351,11 @@ begin
 
   //Radians := ArcTan2( Pivot.Y - FDragPos.Y, FDragPos.X - Pivot.X );
   //Radians := ArcTan2( P1.Y, P1.X );
-  Radians := ArcTan2( LPivot.Y - P1.Y, P1.X - LPivot.X );
+  Radians := ArcTan2( LocalPivot.Y - P1.Y, P1.X - LocalPivot.X );
   Angle1  := RadToDeg( Radians );
 
   //Radians  := ArcTan2( Pivot.Y - NewDragPos.Y, NewDragPos.X - Pivot.X );
-  Radians := ArcTan2( LPivot.Y - P2.Y, P2.X - LPivot.X );
+  Radians := ArcTan2( LocalPivot.Y - P2.Y, P2.X - LocalPivot.X );
   NewAngle := RadToDeg( Radians );
 
 
@@ -2390,6 +2395,8 @@ procedure TTicRubberBandLayer.MouseDown(Button: TMouseButton;
 begin
   if FIsDragging then Exit;
   FDragPos := Point(X, Y);
+  FOldInViewPortPivot := GetPivotTransformed();
+
   FOriginDragPos := FInViewPortTransformation.ReverseTransform(FloatPoint(FDragPos));
 
   FOldOriginPivot := GetPivotOrigin;
@@ -2440,20 +2447,20 @@ const
     crGrArrowMoveNS     // cdWest
   );
 
-function GetNonViewport(P: TFloatPoint):TFloatPoint ;
-var
-  ScaleX, ScaleY, ShiftX, ShiftY : Single;
-begin
-  Result := P;
-  // Scale to non viewport if activated.
-  if Scaled and Assigned(LayerCollection) then
+  function GetNonViewport(P: TFloatPoint):TFloatPoint ;
+  var
+    ScaleX, ScaleY, ShiftX, ShiftY : Single;
   begin
-    LayerCollection.GetViewportScale(ScaleX, ScaleY);
-    LayerCollection.GetViewportShift(ShiftX, ShiftY);
-    Result.X := Result.X / ScaleX - ShiftX;
-    Result.Y := Result.Y / ScaleY - ShiftY;
+    Result := P;
+    // Scale to non viewport if activated.
+    if Scaled and Assigned(LayerCollection) then
+    begin
+      LayerCollection.GetViewportScale(ScaleX, ScaleY);
+      LayerCollection.GetViewportShift(ShiftX, ShiftY);
+      Result.X := Result.X / ScaleX - ShiftX;
+      Result.Y := Result.Y / ScaleY - ShiftY;
+    end;
   end;
-end;
 
 
 
@@ -2635,8 +2642,9 @@ begin
 
       tdsRotate :
           begin
-            //dx := X - FDragPos.X;
-            //dy := Y - FDragPos.Y;
+            dx := X - FDragPos.X;
+            dy := Y - FDragPos.Y;
+            
             Edges  := GetRotatedEdges( FOldEdges, dx, dy );
             Cursor := RotateCursor[GetRotatedCompass(FCompass) ];
           end;
