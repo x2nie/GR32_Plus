@@ -166,6 +166,7 @@ type
     procedure SetBounds(ABoundsRect: TFloatRect); overload;
 
     property Tic[index : Integer] : TFloatPoint read GetTic write SetTic; // expected index: 0 .. 3
+  published
     property Edges: TArrayOfFloatPoint read GetEdges write SetEdges;
     property Scaled: Boolean read FScaled write SetScaled;
     property SourceRect : TFloatRect read GetSourceRect write SetSourceRect;
@@ -187,6 +188,7 @@ type
     constructor Create(ALayerCollection: TLayerCollection); override;
     destructor Destroy; override;
     //procedure PaintTo(Buffer: TBitmap32; const R: TRect);
+  published
     property Bitmap: TBitmap32 read FBitmap write SetBitmap;
     property BlendMode : TBlendMode32 read FBlendMode write SetBlendMode;
   end;
@@ -1846,7 +1848,8 @@ function TTicBitmapLayer.DoHitTest(X, Y: Integer): Boolean;
 var
   B: TPoint;
 begin
-  B := FTransformation.ReverseTransform(Point(X, Y));
+  B := FInViewPortTransformation.ReverseTransform(Point(X, Y));
+
 
   Result := PtInRect(Rect(0, 0, Bitmap.Width, Bitmap.Height), B);
   if Result and {AlphaHit and} (Bitmap.PixelS[B.X, B.Y] and $FF000000 = 0) then
