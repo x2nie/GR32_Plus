@@ -1,6 +1,6 @@
 object MainForm: TMainForm
-  Left = 273
-  Top = 149
+  Left = 326
+  Top = 67
   Width = 738
   Height = 569
   Caption = '(Tic) Image View Elastic_Layers Example'
@@ -23,7 +23,7 @@ object MainForm: TMainForm
     Left = 0
     Top = 0
     Width = 585
-    Height = 504
+    Height = 496
     Align = alClient
     Bitmap.ResamplerClassName = 'TNearestResampler'
     BitmapAlign = baCustom
@@ -48,7 +48,7 @@ object MainForm: TMainForm
     Left = 585
     Top = 0
     Width = 145
-    Height = 504
+    Height = 496
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -130,16 +130,27 @@ object MainForm: TMainForm
       Left = 0
       Top = 130
       Width = 145
-      Height = 168
+      Height = 207
       Align = alTop
       TabOrder = 1
       Visible = False
+      DesignSize = (
+        145
+        207)
       object LblOpacity: TLabel
         Left = 8
         Top = 24
         Width = 41
         Height = 13
         Caption = 'Opacity:'
+      end
+      object Label1: TLabel
+        Left = 10
+        Top = 60
+        Width = 59
+        Height = 13
+        Anchors = [akTop, akRight]
+        Caption = 'Blend Mode:'
       end
       object PnlBitmapLayerHeader: TPanel
         Left = 1
@@ -174,7 +185,7 @@ object MainForm: TMainForm
       end
       object CbxLayerInterpolate: TCheckBox
         Left = 16
-        Top = 64
+        Top = 104
         Width = 97
         Height = 17
         Caption = '&Interpolated'
@@ -183,7 +194,7 @@ object MainForm: TMainForm
       end
       object BtnLayerRescale: TButton
         Left = 16
-        Top = 112
+        Top = 152
         Width = 105
         Height = 17
         Caption = 'Rescale'
@@ -192,7 +203,7 @@ object MainForm: TMainForm
       end
       object BtnLayerResetScale: TButton
         Left = 16
-        Top = 136
+        Top = 176
         Width = 105
         Height = 17
         Caption = 'Scale to 100%'
@@ -201,17 +212,28 @@ object MainForm: TMainForm
       end
       object CbxCropped: TCheckBox
         Left = 16
-        Top = 88
+        Top = 128
         Width = 97
         Height = 17
         Caption = '&Cropped'
         TabOrder = 5
         OnClick = CbxCroppedClick
       end
+      object cbbBlendMode: TComboBox
+        Left = 14
+        Top = 76
+        Width = 119
+        Height = 21
+        Style = csDropDownList
+        Anchors = [akTop, akRight]
+        ItemHeight = 13
+        TabOrder = 6
+        OnChange = cbbBlendModeChange
+      end
     end
     object PnlMagnification: TPanel
       Left = 0
-      Top = 769
+      Top = 808
       Width = 145
       Height = 168
       Align = alTop
@@ -310,7 +332,7 @@ object MainForm: TMainForm
     end
     object PnlButtonMockup: TPanel
       Left = 0
-      Top = 659
+      Top = 698
       Width = 145
       Height = 110
       Align = alTop
@@ -380,7 +402,7 @@ object MainForm: TMainForm
     end
     object PnlResampler: TPanel
       Left = 0
-      Top = 298
+      Top = 337
       Width = 145
       Height = 160
       Align = alTop
@@ -471,7 +493,7 @@ object MainForm: TMainForm
     end
     object PnlKernel: TPanel
       Left = 0
-      Top = 458
+      Top = 497
       Width = 145
       Height = 201
       Align = alTop
@@ -584,7 +606,7 @@ object MainForm: TMainForm
   end
   object stat1: TStatusBar
     Left = 0
-    Top = 504
+    Top = 496
     Width = 730
     Height = 19
     AutoHint = True

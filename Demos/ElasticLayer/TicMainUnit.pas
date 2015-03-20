@@ -42,7 +42,9 @@ uses
   {$IFDEF FPC}LCLIntf, LResources, {$ENDIF}
   SysUtils, Classes, Graphics, Controls, Forms, Dialogs, Menus, ExtCtrls,
   ExtDlgs, StdCtrls, Buttons, GR32, GR32_Image, GR32_Layers, GR32_ElasticLayers,
-  GR32_RangeBars, GR32_Filters, GR32_Transforms, GR32_Resamplers, ComCtrls;
+  GR32_RangeBars, GR32_Filters, GR32_Transforms, GR32_Resamplers,
+  GR32_Add_BlendModes,
+   ComCtrls;
 
 type
   TMainForm = class(TForm)
@@ -129,6 +131,8 @@ type
     KernelModeList: TComboBox;
     GbrTableSize: TGaugeBar;
     GbrParameter: TGaugeBar;
+    Label1: TLabel;
+    cbbBlendMode: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure CbxOptRedrawClick(Sender: TObject);
@@ -170,6 +174,7 @@ type
       Shift: TShiftState);
     procedure ResamplerClassNamesListChange(Sender: TObject);
     procedure KernelClassNamesListClick(Sender: TObject);
+    procedure cbbBlendModeChange(Sender: TObject);
   private
     FSelection: TTicLayer;
     function Src : TBitmap32;
@@ -277,7 +282,9 @@ begin
   KernelList.GetClassNames(KernelClassNamesList.Items);
   ResamplerClassNamesList.ItemIndex := 0;
   KernelClassNamesList.ItemIndex := 0;
-  
+
+  GetBlendModeList(self.cbbBlendMode.Items);
+
   NewBitmapLayer;
 end;
 
@@ -836,6 +843,7 @@ begin
           pnlBitmapLayer.Visible := True;
           GbrLayerOpacity.Position := Bitmap.MasterAlpha;
           CbxLayerInterpolate.Checked := Bitmap.Resampler.ClassType = TDraftResampler;
+          cbbBlendMode.ItemIndex := Ord(BlendMode);
           pnlResampler.Visible := True;
           //pnlKernel.Visible := False;
 
@@ -1214,6 +1222,14 @@ begin
 {$ENDIF}
   else if Kernel is TSinshKernel then
     TSinshKernel(Kernel).Coeff := 20 / GbrParameter.Position;
+end;
+
+procedure TMainForm.cbbBlendModeChange(Sender: TObject);
+begin
+  if Assigned(Selection) then
+  begin
+    TTicBitmapLayer(selection).BlendMode := TBlendMode32(cbbBlendMode.ItemIndex);
+  end;
 end;
 
 end.
