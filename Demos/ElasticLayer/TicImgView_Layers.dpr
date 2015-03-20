@@ -7,7 +7,8 @@ uses
   NewImageUnit in '..\ExtLayer\NewImageUnit.pas',
   RGBALoaderUnit in '..\ExtLayer\RGBALoaderUnit.pas',
   TicMainUnit in 'TicMainUnit.pas' {MainForm},
-  GR32_ElasticLayers in '..\..\GR32_ElasticLayers.pas';
+  GR32_ElasticLayers in '..\..\GR32_ElasticLayers.pas',
+  GR32_Types in '..\..\GR32_Types.pas';
 
 begin
   Application.Initialize;

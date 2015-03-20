@@ -48,7 +48,8 @@ interface
 
 uses
   Windows, Classes, SysUtils, Controls, Forms, Graphics,
-  GR32_Types, GR32, GR32_Image, GR32_Layers, GR32_Transforms, GR32_Polygons;
+  GR32_Types, GR32, GR32_Image, GR32_Layers, GR32_Transforms, GR32_Polygons,
+  GR32_Add_BlendModes;
 
 const
   // These states can be entered by the rubber band layer.
@@ -169,15 +170,16 @@ type
     property Scaled: Boolean read FScaled write SetScaled;
     property SourceRect : TFloatRect read GetSourceRect write SetSourceRect;
     property Cropped: Boolean read FCropped write SetCropped;
-        
   end;
 
 
   TTicBitmapLayer = class(TTicLayer)
   private
     FBitmap: TBitmap32;
+    FBlendMode: TBlendMode32;
     procedure BitmapChanged(Sender: TObject);
     procedure SetBitmap(const Value: TBitmap32);
+    procedure SetBlendMode(const Value: TBlendMode32);
   protected
     function DoHitTest(X, Y: Integer): Boolean; override;
     procedure Paint(Buffer: TBitmap32); override;
@@ -186,6 +188,7 @@ type
     destructor Destroy; override;
     //procedure PaintTo(Buffer: TBitmap32; const R: TRect);
     property Bitmap: TBitmap32 read FBitmap write SetBitmap;
+    property BlendMode : TBlendMode32 read FBlendMode write SetBlendMode;
   end;
 
   TTicRubberBandLayer = class(TTicLayer)
@@ -1816,6 +1819,7 @@ end;
 
 
 
+
 { TTicBitmapLayer }
 
 procedure TTicBitmapLayer.BitmapChanged(Sender: TObject);
@@ -1934,6 +1938,27 @@ begin
   Changing;
   FBitmap.Assign(Value);
   Changed;
+end;
+
+procedure TTicBitmapLayer.SetBlendMode(const Value: TBlendMode32);
+begin
+  if FBlendMode <> Value then
+  begin
+    FBlendMode := Value;
+    case Value of
+      bbmNormal32 :
+        begin
+          Bitmap.OnPixelCombine := nil;
+          Bitmap.DrawMode := dmBlend;
+        end;
+      else
+        begin
+          Bitmap.DrawMode := dmCustom;
+          Bitmap.OnPixelCombine := GetBlendMode(ord(FblendMode));
+        end;
+    end;
+    Changed;
+  end;
 end;
 
 { TTicRubberBandLayer }
