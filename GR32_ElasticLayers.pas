@@ -1672,8 +1672,16 @@ begin
 
   // denormalize texture space (u, v)
   R := IdentityMatrix;
-  R[0, 0] := 1 / (SrcRect.Right - SrcRect.Left);
-  R[1, 1] := 1 / (SrcRect.Bottom - SrcRect.Top);
+  if IsRectEmpty(SrcRect) then
+  begin
+    R[0, 0] := 1;
+    R[1, 1] := 1;
+  end
+  else
+  begin
+    R[0, 0] := 1 / (SrcRect.Right - SrcRect.Left);
+    R[1, 1] := 1 / (SrcRect.Bottom - SrcRect.Top);
+  end;  
   FMatrix := Mult(FMatrix, R);
 
   R := IdentityMatrix;
